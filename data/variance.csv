@@ -1,0 +1,7 @@
+category,budget,actual,variance,variance_pct,type,status
+Sales Revenue,4800000,5520000.0,720000.0,15.0,Revenue,Favourable
+Operating Expenses,2560000,3276800.0,716800.0,28.0,Expense,Unfavourable
+Payroll,3560000,4129600.0,569600.0,16.0,Expense,Unfavourable
+Marketing,840000,781200.0,-58800.0,-7.0,Expense,Favourable
+COGS,2880000,2966400.0,86400.0,3.0,Expense,Unfavourable
+Net Profit,3080000,2433200.0,-646800.0,-21.0,Profit,Unfavourable
