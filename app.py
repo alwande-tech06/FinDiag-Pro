@@ -290,10 +290,15 @@ with tab1:
         rolling["gpm"] = rolling["gross_profit"] / rolling["revenue"] * 100
         rolling["npm"] = rolling["net_profit"]   / rolling["revenue"] * 100
         rolling["cf_ratio"] = rolling["net_cashflow"] / rolling["revenue"] * 100
+        # Normalised scoring calibrated for retail margins (PnP GPM 18-20%, NPM -5% to +5%)
+        rolling["gpm_norm"] = ((rolling["gpm"] - 15) / 10).clip(0, 1)        # 15-25% → 0-1
+        rolling["npm_norm"] = ((rolling["npm"] +  5) / 10).clip(0, 1)        # -5–+5% → 0-1
+        rolling["cf_norm"]  = ((rolling["cf_ratio"] + 10) / 15).clip(0, 1)   # -10–+5% → 0-1
         rolling["rolling_score"] = (
-            rolling["gpm"].clip(0,50) * 1.2 +
-            rolling["npm"].clip(-10,20) * 2.5
-        ).clip(40, 95)
+            rolling["gpm_norm"] * 30 +   # up to 30 pts — gross efficiency
+            rolling["npm_norm"] * 50 +   # up to 50 pts — bottom-line health
+            rolling["cf_norm"]  * 20     # up to 20 pts — cash generation
+        ).clip(10, 90).round(1)
 
         fig_trend = px.line(rolling, x="date", y="rolling_score",
                             title="Financial Health Score Trend",
