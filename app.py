@@ -57,21 +57,25 @@ st.markdown("""
 # ── Data loaders ─────────────────────────────────────────────────────────────
 @st.cache_data
 def load_data():
-    monthly = pd.read_csv("data/monthly_financials.csv", parse_dates=["date"])
-    balance = pd.read_csv("data/balance_sheet.csv")
+    monthly  = pd.read_csv("data/monthly_financials.csv", parse_dates=["date"])
+    balance  = pd.read_csv("data/balance_sheet.csv")
     variance = pd.read_csv("data/variance.csv")
-    return monthly, balance, variance
+    trend    = pd.read_csv("data/revenue_trend.csv")
+    return monthly, balance, variance, trend
 
-monthly_df, balance_df, variance_df = load_data()
+monthly_df, balance_df, variance_df, trend_df = load_data()
 
 # ── Financial ratio calculations ─────────────────────────────────────────────
 def calc_ratios(bs: pd.DataFrame) -> pd.DataFrame:
     df = bs.copy()
-    df["current_ratio"]    = (df["current_assets"] / df["current_liabilities"]).round(2)
-    df["quick_ratio"]      = (df["quick_assets"]   / df["current_liabilities"]).round(2)
-    df["debt_to_equity"]   = (df["total_debt"]      / df["total_equity"]).round(2)
-    df["roa"]              = (df["net_profit"]       / df["total_assets"] * 100).round(2)
-    df["working_capital"]  = (df["current_assets"] - df["current_liabilities"]).round(0)
+    df["current_ratio"]       = (df["current_assets"] / df["current_liabilities"]).round(2)
+    df["quick_ratio"]         = (df["quick_assets"]   / df["current_liabilities"]).round(2)
+    df["debt_to_equity"]      = (df["total_debt"]      / df["total_equity"]).round(2)
+    df["roa"]                 = (df["net_profit"]       / df["total_assets"] * 100).round(2)
+    df["working_capital"]     = (df["current_assets"] - df["current_liabilities"]).round(0)
+    # Efficiency ratios (pre-calculated in CSV from annualised quarterly figures)
+    df["inventory_turnover"]  = df["inventory_turnover"].round(2)
+    df["asset_turnover"]      = df["asset_turnover"].round(2)
     return df
 
 # ── Health score engine ───────────────────────────────────────────────────────
@@ -164,7 +168,7 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown("**Organisation**")
-    org_name = st.text_input("Name", value="DUT Managerial Finance Co.")
+    org_name = st.text_input("Name", value="Pick n Pay Stores Ltd")
     fiscal_year = st.selectbox("Fiscal Year", ["FY 2024", "FY 2023", "FY 2022"])
 
     st.markdown("---")
@@ -311,21 +315,38 @@ with tab2:
     st.subheader("Automated Ratio Analysis Dashboard")
     st.caption("Key financial ratios calculated from balance sheet data with trend visualisation and benchmark comparison.")
 
-    # Current ratio cards
+    # Key ratio KPI cards — row 1
     c1, c2, c3, c4 = st.columns(4)
-    cr_delta  = round(latest_r["current_ratio"] - ratios_df.iloc[-2]["current_ratio"], 2)
-    qr_delta  = round(latest_r["quick_ratio"] - ratios_df.iloc[-2]["quick_ratio"], 2)
+    cr_delta  = round(latest_r["current_ratio"]  - ratios_df.iloc[-2]["current_ratio"],  2)
+    qr_delta  = round(latest_r["quick_ratio"]    - ratios_df.iloc[-2]["quick_ratio"],    2)
     de_delta  = round(latest_r["debt_to_equity"] - ratios_df.iloc[-2]["debt_to_equity"], 2)
-    roa_delta = round(latest_r["roa"] - ratios_df.iloc[-2]["roa"], 2)
+    roa_delta = round(latest_r["roa"]            - ratios_df.iloc[-2]["roa"],            2)
 
-    c1.metric("Current Ratio",   f"{latest_r['current_ratio']:.2f}", f"{cr_delta:+.2f} QoQ",
+    c1.metric("Current Ratio",   f"{latest_r['current_ratio']:.2f}",  f"{cr_delta:+.2f} QoQ",
               delta_color="normal")
-    c2.metric("Quick Ratio",     f"{latest_r['quick_ratio']:.2f}",  f"{qr_delta:+.2f} QoQ",
+    c2.metric("Quick Ratio",     f"{latest_r['quick_ratio']:.2f}",    f"{qr_delta:+.2f} QoQ",
               delta_color="normal")
     c3.metric("Debt-to-Equity",  f"{latest_r['debt_to_equity']:.2f}", f"{de_delta:+.2f} QoQ",
               delta_color="inverse")
-    c4.metric("ROA",             f"{latest_r['roa']:.1f}%",          f"{roa_delta:+.1f}% QoQ",
+    c4.metric("ROA",             f"{latest_r['roa']:.1f}%",           f"{roa_delta:+.1f}% QoQ",
               delta_color="normal")
+
+    # Efficiency ratios — row 2
+    c5, c6, c7, c8 = st.columns(4)
+    it_delta  = round(latest_r["inventory_turnover"] - ratios_df.iloc[-2]["inventory_turnover"], 2)
+    at_delta  = round(latest_r["asset_turnover"]     - ratios_df.iloc[-2]["asset_turnover"],     2)
+    wc_val    = latest_r["working_capital"]
+
+    c5.metric("Inventory Turnover", f"{latest_r['inventory_turnover']:.2f}x", f"{it_delta:+.2f} QoQ",
+              delta_color="normal")
+    c6.metric("Asset Turnover",     f"{latest_r['asset_turnover']:.2f}x",     f"{at_delta:+.2f} QoQ",
+              delta_color="normal")
+    c7.metric("Working Capital",    f"R{wc_val/1e3:,.1f}B",
+              delta="Declining" if wc_val < 3_000 else "Stable",
+              delta_color="inverse" if wc_val < 3_000 else "normal")
+    c8.metric("Gross Profit Margin",
+              f"{(monthly_df['gross_profit'].tail(3).sum()/monthly_df['revenue'].tail(3).sum()*100):.1f}%",
+              "18.1% FY2024 actual")
 
     st.markdown("---")
     c1, c2 = st.columns(2)
@@ -381,24 +402,60 @@ with tab2:
                              legend=dict(orientation="h", y=-0.3))
     st.plotly_chart(fig_margin, use_container_width=True)
 
+    # Efficiency ratio trend charts
+    c1, c2 = st.columns(2)
+    with c1:
+        fig_it = go.Figure()
+        fig_it.add_trace(go.Scatter(x=ratios_df["quarter"], y=ratios_df["inventory_turnover"],
+                                    name="Inventory Turnover", mode="lines+markers",
+                                    line=dict(color="#7C3AED", width=2.5), marker=dict(size=7)))
+        fig_it.add_hline(y=8.0, line_dash="dot", line_color="#dc2626",
+                         annotation_text="Industry min ~8x")
+        fig_it.update_layout(title="Inventory Turnover — Quarterly", height=250,
+                             margin=dict(t=50, b=20), yaxis_title="Turns (x)",
+                             showlegend=False)
+        st.plotly_chart(fig_it, use_container_width=True)
+
+    with c2:
+        fig_at = go.Figure()
+        fig_at.add_trace(go.Scatter(x=ratios_df["quarter"], y=ratios_df["asset_turnover"],
+                                    name="Asset Turnover", mode="lines+markers",
+                                    line=dict(color="#0891B2", width=2.5), marker=dict(size=7)))
+        fig_at.update_layout(title="Asset Turnover — Quarterly", height=250,
+                             margin=dict(t=50, b=20), yaxis_title="Turns (x)",
+                             showlegend=False)
+        st.plotly_chart(fig_at, use_container_width=True)
+
     # Ratio interpretation table
     st.markdown("#### Ratio Interpretation & Recommendations")
+    roa_status  = "✅ Good" if latest_r["roa"] > 0 else "🔴 Loss"
+    roa_interp  = ("Positive asset returns." if latest_r["roa"] > 0
+                   else "Negative — assets generating a loss. FY2024 reflects R3.19B net loss.")
     ratio_interp = [
-        {"Ratio": "Current Ratio", "Value": f"{latest_r['current_ratio']:.2f}",
-         "Benchmark": "≥ 1.5", "Status": "⚠️ Watch",
-         "Interpretation": "Below benchmark. Short-term liability pressure increasing."},
-        {"Ratio": "Quick Ratio", "Value": f"{latest_r['quick_ratio']:.2f}",
-         "Benchmark": "≥ 1.0", "Status": "🔴 Low",
-         "Interpretation": "Below 1.0 — cannot cover current liabilities with liquid assets."},
-        {"Ratio": "Debt-to-Equity", "Value": f"{latest_r['debt_to_equity']:.2f}",
-         "Benchmark": "≤ 1.5", "Status": "⚠️ Elevated",
-         "Interpretation": "Leverage is elevated. Limit new borrowings."},
-        {"Ratio": "ROA", "Value": f"{latest_r['roa']:.1f}%",
-         "Benchmark": "≥ 8%", "Status": "✅ Good",
-         "Interpretation": "Assets are generating returns above the 8% threshold."},
-        {"Ratio": "Working Capital", "Value": f"R{latest_r['working_capital']:,.0f}",
-         "Benchmark": "Positive", "Status": "⚠️ Declining",
-         "Interpretation": "Positive but declining 3 consecutive quarters."},
+        {"Ratio": "Current Ratio",
+         "Value": f"{latest_r['current_ratio']:.2f}",
+         "Benchmark": "≥ 1.5", "Status": "🔴 Weak",
+         "Interpretation": "At ~1.05 — barely above 1.0. Working capital buffer is very thin."},
+        {"Ratio": "Quick Ratio",
+         "Value": f"{latest_r['quick_ratio']:.2f}",
+         "Benchmark": "≥ 1.0", "Status": "🔴 Risky",
+         "Interpretation": "At ~0.40 — PnP cannot cover current liabilities with liquid assets alone."},
+        {"Ratio": "Debt-to-Equity",
+         "Value": f"{latest_r['debt_to_equity']:.2f}",
+         "Benchmark": "≤ 1.5", "Status": "🔴 High",
+         "Interpretation": "Leverage is very high due to equity erosion from FY2024 loss."},
+        {"Ratio": "ROA",
+         "Value": f"{latest_r['roa']:.1f}%",
+         "Benchmark": "≥ 5%", "Status": roa_status,
+         "Interpretation": roa_interp},
+        {"Ratio": "Inventory Turnover",
+         "Value": f"{latest_r['inventory_turnover']:.2f}x",
+         "Benchmark": "≥ 8.0x", "Status": "⚠️ Watch",
+         "Interpretation": "Declining turns signal slower stock movement — risk of excess inventory."},
+        {"Ratio": "Asset Turnover",
+         "Value": f"{latest_r['asset_turnover']:.2f}x",
+         "Benchmark": "≥ 3.0x (retail)", "Status": "⚠️ Monitor",
+         "Interpretation": "Revenue generated per rand of assets. Declining trend warrants attention."},
     ]
     st.dataframe(pd.DataFrame(ratio_interp), use_container_width=True, hide_index=True)
 
@@ -413,52 +470,61 @@ with tab3:
     # Summary KPIs
     rev_row = variance_df[variance_df["category"] == "Sales Revenue"].iloc[0]
     exp_row = variance_df[variance_df["category"] == "Operating Expenses"].iloc[0]
-    pay_row = variance_df[variance_df["category"] == "Payroll"].iloc[0]
-    pnl_row = variance_df[variance_df["category"] == "Net Profit"].iloc[0]
+    pnl_row = variance_df[variance_df["category"] == "Net Profit / Loss"].iloc[0]
+    gp_row  = variance_df[variance_df["category"] == "Gross Profit"].iloc[0]
 
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Revenue Variance",  f"R{rev_row['variance']:+,.0f}", f"{rev_row['variance_pct']:+.1f}%")
-    c2.metric("Expense Variance",  f"R{exp_row['variance']:+,.0f}", f"{exp_row['variance_pct']:+.1f}%",
+    c1.metric("Revenue vs Budget",      f"R{rev_row['variance']/1000:+.1f}B", f"{rev_row['variance_pct']:+.1f}%")
+    c2.metric("OpEx vs Budget",         f"R{exp_row['variance']/1000:+.1f}B", f"{exp_row['variance_pct']:+.1f}%",
               delta_color="inverse")
-    c3.metric("Payroll Variance",  f"R{pay_row['variance']:+,.0f}", f"{pay_row['variance_pct']:+.1f}%",
-              delta_color="inverse")
-    c4.metric("Profit Variance",   f"R{pnl_row['variance']:+,.0f}", f"{pnl_row['variance_pct']:+.1f}%")
+    c3.metric("Gross Profit vs Budget", f"R{gp_row['variance']/1000:+.1f}B",  f"{gp_row['variance_pct']:+.1f}%")
+    c4.metric("Net Profit vs Budget",   f"R{pnl_row['variance']/1000:+.1f}B", f"{pnl_row['variance_pct']:+.1f}%")
 
     st.markdown("---")
 
-    # Variance table
+    # Variance table — Budget vs Actual 2024
+    st.markdown("##### Budget vs Actual — FY2024 (ZAR millions)")
     display_var = variance_df.copy()
-    display_var["budget"]       = display_var["budget"].apply(lambda x: f"R{x:,.0f}")
-    display_var["actual"]       = display_var["actual"].apply(lambda x: f"R{x:,.0f}")
-    display_var["variance"]     = display_var["variance"].apply(lambda x: f"R{x:+,.0f}")
+    for col in ["actual_2024", "budget_2024", "actual_2023"]:
+        display_var[col] = display_var[col].apply(lambda x: f"R{x/1000:+.2f}B")
+    display_var["variance"]     = display_var["variance"].apply(lambda x: f"R{x/1000:+.2f}B")
     display_var["variance_pct"] = display_var["variance_pct"].apply(lambda x: f"{x:+.1f}%")
+    display_var["yoy_change"]   = display_var["yoy_change"].apply(lambda x: f"R{x/1000:+.2f}B")
+    display_var["yoy_pct"]      = display_var["yoy_pct"].apply(lambda x: f"{x:+.1f}%")
     display_var = display_var.rename(columns={
-        "category": "Category", "budget": "Budget", "actual": "Actual",
-        "variance": "Variance (R)", "variance_pct": "Variance %",
-        "type": "Type", "status": "Status"
+        "category": "Category", "budget_2024": "Budget 2024", "actual_2024": "Actual 2024",
+        "actual_2023": "Actual 2023", "variance": "Budget Variance",
+        "variance_pct": "Variance %", "yoy_change": "YoY Change",
+        "yoy_pct": "YoY %", "type": "Type", "status": "Status"
     })
-    st.dataframe(display_var[["Category","Type","Budget","Actual","Variance (R)","Variance %","Status"]],
+    st.dataframe(display_var[["Category","Type","Budget 2024","Actual 2024","Budget Variance",
+                               "Variance %","Actual 2023","YoY Change","YoY %","Status"]],
                  use_container_width=True, hide_index=True)
 
     st.markdown("---")
     c1, c2 = st.columns(2)
 
     with c1:
-        # Grouped bar: budget vs actual
+        # Grouped bar: budget vs actual vs prior year
         fig_var = go.Figure()
-        fig_var.add_trace(go.Bar(name="Budget",
+        fig_var.add_trace(go.Bar(name="Budget 2024",
                                  x=variance_df["category"],
-                                 y=variance_df["budget"] / 1e6,
+                                 y=variance_df["budget_2024"] / 1000,
                                  marker_color="rgba(24,95,165,0.55)",
                                  marker_line=dict(color="#185FA5", width=1)))
-        fig_var.add_trace(go.Bar(name="Actual",
+        fig_var.add_trace(go.Bar(name="Actual 2024",
                                  x=variance_df["category"],
-                                 y=variance_df["actual"] / 1e6,
+                                 y=variance_df["actual_2024"] / 1000,
                                  marker_color="rgba(220,38,38,0.55)",
                                  marker_line=dict(color="#dc2626", width=1)))
-        fig_var.update_layout(barmode="group", title="Budget vs Actual (R millions)",
+        fig_var.add_trace(go.Bar(name="Actual 2023",
+                                 x=variance_df["category"],
+                                 y=variance_df["actual_2023"] / 1000,
+                                 marker_color="rgba(29,158,117,0.45)",
+                                 marker_line=dict(color="#1D9E75", width=1)))
+        fig_var.update_layout(barmode="group", title="Budget vs Actual vs Prior Year (R billions)",
                               height=300, margin=dict(t=50,b=20),
-                              yaxis_title="R millions",
+                              yaxis_title="R billions",
                               legend=dict(orientation="h", y=-0.3),
                               xaxis_tickangle=-20)
         st.plotly_chart(fig_var, use_container_width=True)
@@ -471,25 +537,35 @@ with tab3:
             x=variance_df["category"],
             y=variance_df["variance"] / 1000,
             marker_color=variance_df["color"],
-            text=[f"R{v/1000:+.0f}K" for v in variance_df["variance"]],
+            text=[f"R{v/1000:+.1f}B" for v in variance_df["variance"]],
             textposition="outside",
         ))
         fig_wfall.add_hline(y=0, line_color="gray", line_width=1)
-        fig_wfall.update_layout(title="Variance Analysis (R thousands)",
+        fig_wfall.update_layout(title="Budget Variance Analysis (R billions)",
                                 height=300, margin=dict(t=50,b=20),
-                                yaxis_title="Variance (R000)", showlegend=False,
+                                yaxis_title="Variance (R billions)", showlegend=False,
                                 xaxis_tickangle=-20)
         st.plotly_chart(fig_wfall, use_container_width=True)
 
-    # Monthly revenue vs trend
+    # Annual revenue trend (real PnP data)
+    fig_trend_annual = go.Figure()
+    fig_trend_annual.add_trace(go.Bar(
+        x=trend_df["year"].astype(str), y=trend_df["revenue"] / 1000,
+        name="Revenue", marker_color="rgba(24,95,165,0.55)"))
+    fig_trend_annual.update_layout(
+        title="Pick n Pay Annual Revenue Trend (2021–2025, R billions)",
+        height=260, margin=dict(t=50,b=20), yaxis_title="R billions", showlegend=False)
+    st.plotly_chart(fig_trend_annual, use_container_width=True)
+
+    # Monthly revenue vs expenses
     fig_rev = go.Figure()
-    fig_rev.add_trace(go.Bar(x=monthly_df["date"], y=monthly_df["revenue"] / 1e6,
+    fig_rev.add_trace(go.Bar(x=monthly_df["date"], y=monthly_df["revenue"] / 1000,
                              name="Revenue", marker_color="rgba(24,95,165,0.4)"))
     fig_rev.add_trace(go.Scatter(x=monthly_df["date"],
-                                 y=monthly_df["operating_expenses"] / 1e6,
+                                 y=monthly_df["operating_expenses"] / 1000,
                                  name="Operating Expenses",
                                  line=dict(color="#dc2626", width=2, dash="dash")))
-    fig_rev.update_layout(title="Monthly Revenue vs Operating Expenses", height=280,
+    fig_rev.update_layout(title="Monthly Revenue vs Operating Expenses (R millions)", height=280,
                           margin=dict(t=50,b=20), yaxis_title="R millions",
                           legend=dict(orientation="h", y=-0.3))
     st.plotly_chart(fig_rev, use_container_width=True)
@@ -506,7 +582,7 @@ with tab3:
                 st.markdown(f"""
                 <div class="{level}">
                     {icon} <strong>{row['category']}</strong> — Unfavourable variance of
-                    R{abs(row['variance']):,.0f} ({pct:.1f}% over budget).
+                    R{abs(row['variance'])/1000:.2f}B ({pct:.1f}% vs budget).
                     {'Immediate review recommended.' if pct > 15 else 'Monitor closely.'}
                 </div>
                 """, unsafe_allow_html=True)

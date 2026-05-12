@@ -1,7 +1,6 @@
-category,budget,actual,variance,variance_pct,type,status
-Sales Revenue,4800000,5520000.0,720000.0,15.0,Revenue,Favourable
-Operating Expenses,2560000,3276800.0,716800.0,28.0,Expense,Unfavourable
-Payroll,3560000,4129600.0,569600.0,16.0,Expense,Unfavourable
-Marketing,840000,781200.0,-58800.0,-7.0,Expense,Favourable
-COGS,2880000,2966400.0,86400.0,3.0,Expense,Unfavourable
-Net Profit,3080000,2433200.0,-646800.0,-21.0,Profit,Unfavourable
+category,actual_2024,budget_2024,actual_2023,variance,variance_pct,yoy_change,yoy_pct,type,status
+Sales Revenue,114940,112000,108570,2940,2.62,6370,5.87,Revenue,Favourable
+Gross Profit,20800,22960,20628,-2160,-9.41,172,0.83,Profit,Unfavourable
+Operating Expenses,22600,20500,20200,2100,10.24,2400,11.88,Expense,Unfavourable
+Finance Costs,1390,700,700,690,98.57,690,98.57,Expense,Unfavourable
+Net Profit / Loss,-3190,2500,1170,-5690,-227.6,-4360,-372.65,Profit,Unfavourable
