@@ -18,7 +18,7 @@ warnings.filterwarnings("ignore")
 # ── Page config ─────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="FinDiag Pro — Financial Health Diagnostics",
-    page_icon="📊",
+    #page_icon="",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -184,7 +184,7 @@ latest_r    = ratios_df.iloc[-1]
 # ── Header ────────────────────────────────────────────────────────────────────
 st.markdown(f"""
 <div class="main-header">
-    <h1>📊 FinDiag Pro — Financial Health Diagnostics</h1>
+    <h1> FinDiag Pro — Financial Health Diagnostics</h1>
     <p>{org_name} &nbsp;|&nbsp; {fiscal_year} &nbsp;|&nbsp; AI-Enhanced Early-Warning & Decision Support System</p>
 </div>
 """, unsafe_allow_html=True)
@@ -193,11 +193,11 @@ st.markdown(f"""
 # TABS
 # ══════════════════════════════════════════════════════════════════════════════
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "🏅 Health Scorecard",
-    "📐 Ratio Analysis",
-    "📊 Variance Monitor",
-    "🔍 Anomaly Detection",
-    "🚨 Early Warning"
+    " Health Scorecard",
+    " Ratio Analysis",
+    " Variance Monitor",
+    " Anomaly Detection",
+    " Early Warning"
 ])
 
 # ══════════════════════════════════════════════════════════════════════════════
