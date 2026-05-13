@@ -23,34 +23,15 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── Custom CSS ───────────────────────────────────────────────────────────────
+# ── Tailwind CSS CDN + Streamlit overrides ────────────────────────────────────
 st.markdown("""
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 <style>
-    .main-header {
-        background: linear-gradient(135deg, #0d2137 0%, #185FA5 100%);
-        padding: 1.5rem 2rem;
-        border-radius: 12px;
-        margin-bottom: 1.5rem;
-        color: white;
+    div[data-testid="metric-container"] {
+        background: #f8fafc; border-radius: 10px;
+        padding: 0.75rem; border: 1px solid #e2e8f0;
     }
-    .main-header h1 { color: white; margin: 0; font-size: 1.8rem; }
-    .main-header p  { color: rgba(255,255,255,0.75); margin: 0.25rem 0 0; font-size: 0.9rem; }
-    .metric-card {
-        background: white;
-        border: 1px solid #e8edf2;
-        border-radius: 10px;
-        padding: 1rem 1.25rem;
-        text-align: center;
-    }
-    .score-healthy  { color: #1a7a3e; background: #eaf7ef; border-radius: 8px; padding: 4px 12px; font-weight: 600; }
-    .score-moderate { color: #b45309; background: #fef3c7; border-radius: 8px; padding: 4px 12px; font-weight: 600; }
-    .score-highrisk { color: #991b1b; background: #fef2f2; border-radius: 8px; padding: 4px 12px; font-weight: 600; }
-    .alert-critical { background: #fef2f2; border-left: 4px solid #dc2626; padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 6px 0; }
-    .alert-warning  { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 6px 0; }
-    .alert-info     { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 6px 0; }
-    .fav   { color: #15803d; font-weight: 600; }
-    .unfav { color: #dc2626; font-weight: 600; }
-    div[data-testid="metric-container"] { background: #f8fafc; border-radius: 10px; padding: 0.75rem; border: 1px solid #e2e8f0; }
+    .stMarkdown > div { padding-top: 0 !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -173,7 +154,7 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown("**About FinDiag Pro**")
-    st.caption("AI-Enhanced Financial Health Diagnostics\nPathway B — Managerial Finance PBL\nDurban University of Technology")
+    st.caption("AI-Enhanced Financial Health Diagnostics\nDurban University of Technology")
 
 # ── Computed data ─────────────────────────────────────────────────────────────
 ratios_df   = calc_ratios(balance_df)
@@ -183,9 +164,14 @@ latest_r    = ratios_df.iloc[-1]
 
 # ── Header ────────────────────────────────────────────────────────────────────
 st.markdown(f"""
-<div class="main-header">
-    <h1> FinDiag Pro — Financial Health Diagnostics</h1>
-    <p>{org_name} &nbsp;|&nbsp; {fiscal_year} &nbsp;|&nbsp; AI-Enhanced Early-Warning & Decision Support System</p>
+<div class="bg-gradient-to-r from-blue-900 to-blue-600 rounded-2xl px-8 py-5 mb-4 shadow-lg flex items-center justify-between">
+  <div>
+    <h1 class="text-white text-2xl font-bold tracking-tight m-0 p-0">&#128202; FinDiag Pro &mdash; Financial Health Diagnostics</h1>
+    <p class="text-blue-200 text-sm mt-1 m-0">{org_name} &nbsp;&bull;&nbsp; {fiscal_year} &nbsp;&bull;&nbsp; AI-Enhanced Early-Warning &amp; Decision Support System</p>
+  </div>
+  <div class="text-right">
+    <span class="bg-blue-800 text-blue-100 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Live Dashboard</span>
+  </div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -241,10 +227,15 @@ with tab1:
         fig_gauge.update_layout(height=280, margin=dict(t=50, b=10, l=20, r=20))
         st.plotly_chart(fig_gauge, use_container_width=True)
 
-        cat_css = {"Healthy": "score-healthy", "Moderate Risk": "score-moderate", "High Risk": "score-highrisk"}
-        st.markdown(f'<div style="text-align:center;font-size:1.2rem;margin-top:-.5rem;">'
-                    f'<span class="{cat_css[health["category"]]}">{health["category"]}</span></div>',
-                    unsafe_allow_html=True)
+        badge = {
+            "Healthy":       "bg-green-100 text-green-800 border border-green-300",
+            "Moderate Risk": "bg-yellow-100 text-yellow-800 border border-yellow-300",
+            "High Risk":     "bg-red-100 text-red-800 border border-red-300",
+        }[health["category"]]
+        st.markdown(f"""
+        <div class="text-center mt-1">
+          <span class="{badge} px-4 py-1 rounded-full text-base font-semibold">{health["category"]}</span>
+        </div>""", unsafe_allow_html=True)
 
     # Radar / dimension breakdown
     with c2:
@@ -269,18 +260,18 @@ with tab1:
         )
         st.plotly_chart(fig_radar, use_container_width=True)
 
-        # Dimension bars
+        # Dimension bars (Tailwind)
         for lbl, val in zip(labels, vals):
-            color = "#16a34a" if val >= 70 else "#d97706" if val >= 50 else "#dc2626"
+            bar_cls  = "bg-green-500" if val >= 70 else "bg-yellow-400" if val >= 50 else "bg-red-500"
+            text_cls = "text-green-700" if val >= 70 else "text-yellow-700" if val >= 50 else "text-red-700"
             st.markdown(f"""
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:5px;font-size:13px;">
-              <span style="width:100px;color:#64748b;">{lbl}</span>
-              <div style="flex:1;background:#f1f5f9;border-radius:4px;height:10px;">
-                <div style="width:{val}%;background:{color};height:10px;border-radius:4px;"></div>
+            <div class="flex items-center gap-2 mb-1 text-xs">
+              <span class="w-24 text-gray-500 font-medium">{lbl}</span>
+              <div class="flex-1 bg-gray-100 rounded-full h-2">
+                <div class="{bar_cls} h-2 rounded-full" style="width:{val}%"></div>
               </div>
-              <span style="width:34px;text-align:right;font-weight:600;color:{color};">{val}</span>
-            </div>
-            """, unsafe_allow_html=True)
+              <span class="w-8 text-right font-bold {text_cls}">{val}</span>
+            </div>""", unsafe_allow_html=True)
 
     st.markdown("---")
 
@@ -582,15 +573,15 @@ with tab3:
         for _, row in variance_df.iterrows():
             if row["status"] == "Unfavourable":
                 pct = abs(row["variance_pct"])
-                level = "alert-critical" if pct > 15 else "alert-warning"
-                icon  = "🔴" if pct > 15 else "🟡"
+                cls  = "bg-red-50 border-red-500"    if pct > 15 else "bg-yellow-50 border-yellow-400"
+                icon = "🔴" if pct > 15 else "🟡"
+                note = "Immediate review recommended." if pct > 15 else "Monitor closely."
                 st.markdown(f"""
-                <div class="{level}">
-                    {icon} <strong>{row['category']}</strong> — Unfavourable variance of
-                    R{abs(row['variance'])/1000:.2f}B ({pct:.1f}% vs budget).
-                    {'Immediate review recommended.' if pct > 15 else 'Monitor closely.'}
-                </div>
-                """, unsafe_allow_html=True)
+                <div class="border-l-4 {cls} px-4 py-3 rounded-r-lg my-2">
+                  <span class="font-semibold">{icon} {row['category']}</span>
+                  <span class="text-gray-600 text-sm"> &mdash; Unfavourable variance of
+                  R{abs(row['variance'])/1000:.2f}B ({pct:.1f}% vs budget). {note}</span>
+                </div>""", unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -636,10 +627,10 @@ with tab4:
                              yaxis_title="Expenses (R000)")
         st.plotly_chart(fig_sc, use_container_width=True)
 
-        # Legend
         st.markdown("""
-        <div style="display:flex;gap:20px;font-size:13px;color:#64748b;margin-top:-10px;">
-            <span>🔵 Normal &nbsp; 🔴 Anomaly (|Z| &gt; threshold)</span>
+        <div class="flex gap-4 text-xs text-gray-500 mt-1">
+          <span class="flex items-center gap-1">&#128309; Normal</span>
+          <span class="flex items-center gap-1">&#128308; Anomaly (|Z| &gt; threshold)</span>
         </div>""", unsafe_allow_html=True)
 
     with c2:
@@ -732,14 +723,18 @@ with tab5:
 
     cols = st.columns(3)
     for i, (label, level) in enumerate(risks.items()):
-        color = "#fef2f2" if "HIGH" in level else "#fffbeb" if "MEDIUM" in level else "#f0fdf4"
-        tcolor = "#991b1b" if "HIGH" in level else "#92400e" if "MEDIUM" in level else "#166534"
+        bg   = "bg-red-50 border border-red-200"   if "HIGH"   in level else \
+               "bg-yellow-50 border border-yellow-200" if "MEDIUM" in level else \
+               "bg-green-50 border border-green-200"
+        tcls = "text-red-800"    if "HIGH"   in level else \
+               "text-yellow-800" if "MEDIUM" in level else \
+               "text-green-800"
         cols[i % 3].markdown(f"""
-        <div style="background:{color};border-radius:10px;padding:14px;text-align:center;margin-bottom:10px;">
-            <div style="font-size:1.3rem;">{level.split()[0]}</div>
-            <div style="font-size:0.8rem;font-weight:600;color:{tcolor};margin-top:4px;">{label}</div>
-        </div>
-        """, unsafe_allow_html=True)
+        <div class="{bg} rounded-xl p-4 text-center mb-2 shadow-sm">
+          <div class="text-2xl">{level.split()[0]}</div>
+          <div class="text-xs font-bold {tcls} mt-1 uppercase tracking-wide">{label}</div>
+          <div class="text-xs {tcls} font-medium mt-0.5">{level.split()[-1]}</div>
+        </div>""", unsafe_allow_html=True)
 
     st.markdown("---")
     c1, c2 = st.columns([1.2, 1])
@@ -768,15 +763,15 @@ with tab5:
                        f"YoY revenue growth is a key stabilising factor for the organisation."))
 
         for level, title, desc in alerts:
-            level_class = "alert-critical" if level == "critical" else \
-                          "alert-warning" if level == "warning" else "alert-info"
+            cls  = "bg-red-50 border-red-500"    if level == "critical" else \
+                   "bg-yellow-50 border-yellow-400" if level == "warning"  else \
+                   "bg-blue-50 border-blue-400"
             icon = "🔴" if level == "critical" else "🟡" if level == "warning" else "🔵"
             st.markdown(f"""
-            <div class="{level_class}">
-                {icon} <strong>{title}</strong><br>
-                <span style="font-size:13px;color:#64748b;">{desc}</span>
-            </div>
-            """, unsafe_allow_html=True)
+            <div class="border-l-4 {cls} px-4 py-3 rounded-r-xl my-2">
+              <p class="font-semibold text-sm m-0">{icon} {title}</p>
+              <p class="text-xs text-gray-500 m-0 mt-1">{desc}</p>
+            </div>""", unsafe_allow_html=True)
 
     # Risk radar
     with c2:
@@ -847,15 +842,17 @@ with tab5:
          f"Revenue growing at {health['gpm']:.1f}% gross margin. Channel growth into cash reserves to rebuild liquidity."),
     ]
     for icon, title, desc in recs:
-        color = "#fef2f2" if icon == "🔴" else "#fffbeb" if icon == "🟡" else "#f0fdf4"
-        border = "#dc2626" if icon == "🔴" else "#f59e0b" if icon == "🟡" else "#16a34a"
+        cls = "bg-red-50 border-red-500"    if icon == "🔴" else \
+              "bg-yellow-50 border-yellow-400" if icon == "🟡" else \
+              "bg-green-50 border-green-500"
         st.markdown(f"""
-        <div style="background:{color};border-left:4px solid {border};
-             padding:10px 14px;border-radius:0 8px 8px 0;margin:6px 0;">
-            {icon} <strong>{title}</strong><br>
-            <span style="font-size:13px;color:#475569;">{desc}</span>
-        </div>
-        """, unsafe_allow_html=True)
+        <div class="border-l-4 {cls} px-4 py-3 rounded-r-xl my-2 shadow-sm">
+          <p class="font-semibold text-sm m-0">{icon} {title}</p>
+          <p class="text-xs text-gray-600 m-0 mt-1">{desc}</p>
+        </div>""", unsafe_allow_html=True)
 
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.caption("FinDiag Pro v1.0 — Managerial Finance PBL | Pathway B | Durban University of Technology")
+    st.markdown("""
+    <div class="mt-6 border-t border-gray-200 pt-4 flex items-center justify-between text-xs text-gray-400">
+      <span>FinDiag Pro v1.0 &mdash; AI-Enhanced Financial Diagnostics</span>
+      <span>Managerial Finance PBL &bull; Pathway B &bull; Durban University of Technology</span>
+    </div>""", unsafe_allow_html=True)
