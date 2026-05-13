@@ -9,11 +9,38 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
+import plotly.io as pio
 from plotly.subplots import make_subplots
 from sklearn.ensemble import IsolationForest
 from scipy import stats
 import warnings
 warnings.filterwarnings("ignore")
+
+# ── Global Plotly theme ───────────────────────────────────────────────────────
+_t = go.layout.Template()
+_t.layout = go.Layout(
+    paper_bgcolor="#FFFFFF",
+    plot_bgcolor="#F8FAFC",
+    font=dict(family="Inter, system-ui, sans-serif", color="#334155", size=11),
+    title=dict(font=dict(size=13, color="#0B1F3A"), x=0.01),
+    xaxis=dict(gridcolor="#EDF2F7", linecolor="#E2E8F0", tickcolor="#CBD5E1",
+               showgrid=True, zeroline=False),
+    yaxis=dict(gridcolor="#EDF2F7", linecolor="#E2E8F0", tickcolor="#CBD5E1",
+               showgrid=True, zeroline=False),
+    legend=dict(bgcolor="rgba(255,255,255,0.95)", bordercolor="#E2E8F0",
+                borderwidth=1, font=dict(size=11)),
+    colorway=["#1D4ED8","#0D9488","#DC2626","#D97706","#4F46E5","#64748B"],
+)
+pio.templates["findiag"] = _t
+pio.templates.default   = "plotly+findiag"
+
+# Brand colours (used in individual chart calls)
+C_BLUE   = "#1D4ED8"
+C_TEAL   = "#0D9488"
+C_RED    = "#DC2626"
+C_AMBER  = "#D97706"
+C_INDIGO = "#4F46E5"
+C_SLATE  = "#64748B"
 
 # ── Page config ─────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -23,17 +50,86 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── Tailwind CSS CDN + Streamlit overrides ────────────────────────────────────
+# ── Tailwind CDN + Professional Business Theme ────────────────────────────────
 st.markdown("""
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 <style>
-    div[data-testid="metric-container"] {
-        background: #f8fafc; border-radius: 10px;
-        padding: 0.75rem; border: 1px solid #e2e8f0;
-    }
-    .stMarkdown > div { padding-top: 0 !important; }
+  /* ── Page & App Shell ───────────────────────────────────── */
+  [data-testid="stAppViewContainer"] > .main {
+      background-color: #EDF2F7;
+  }
+  .block-container { padding-top: 1.2rem !important; }
+
+  /* ── Sidebar ────────────────────────────────────────────── */
+  [data-testid="stSidebar"] > div:first-child {
+      background: linear-gradient(180deg, #0B1F3A 0%, #1A3A6E 100%);
+  }
+  [data-testid="stSidebar"] .stMarkdown,
+  [data-testid="stSidebar"] label,
+  [data-testid="stSidebar"] .stSelectbox label,
+  [data-testid="stSidebar"] .stSlider label,
+  [data-testid="stSidebar"] .stTextInput label,
+  [data-testid="stSidebar"] p,
+  [data-testid="stSidebar"] span { color: #CBD5E1 !important; }
+  [data-testid="stSidebar"] h3 { color: #F1F5F9 !important; }
+  [data-testid="stSidebar"] hr { border-color: #334155; }
+  [data-testid="stSidebar"] .stCaption { color: #94A3B8 !important; }
+
+  /* ── Streamlit Top Header ───────────────────────────────── */
+  [data-testid="stHeader"] { background: transparent !important; }
+
+  /* ── Tabs ───────────────────────────────────────────────── */
+  .stTabs [data-baseweb="tab-list"] {
+      background: #FFFFFF;
+      border-radius: 10px;
+      border: 1px solid #E2E8F0;
+      padding: 4px;
+      gap: 2px;
+  }
+  .stTabs [data-baseweb="tab"] {
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      color: #475569;
+      padding: 6px 14px;
+  }
+  .stTabs [aria-selected="true"] {
+      background: #1E3A8A !important;
+      color: white !important;
+  }
+
+  /* ── Metric Widgets ─────────────────────────────────────── */
+  div[data-testid="metric-container"] {
+      background: #FFFFFF;
+      border-radius: 12px;
+      padding: 1rem;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 1px 4px rgba(15,32,68,0.08);
+  }
+  div[data-testid="metric-container"] label {
+      color: #64748B !important;
+      font-size: 0.72rem !important;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600 !important;
+  }
+  div[data-testid="metric-container"] [data-testid="stMetricValue"] {
+      color: #0F172A !important;
+      font-size: 1.5rem !important;
+      font-weight: 700 !important;
+  }
+
+  /* ── DataFrames ─────────────────────────────────────────── */
+  [data-testid="stDataFrame"] { border-radius: 10px; overflow: hidden; }
+
+  /* ── Section headings ───────────────────────────────────── */
+  h2, h3 { color: #0B1F3A !important; font-weight: 700 !important; }
+
+  /* ── Markdown spacing ───────────────────────────────────── */
+  .stMarkdown > div { padding-top: 0 !important; }
 </style>
 """, unsafe_allow_html=True)
+
 
 # ── Data loaders ─────────────────────────────────────────────────────────────
 @st.cache_data
@@ -164,13 +260,29 @@ latest_r    = ratios_df.iloc[-1]
 
 # ── Header ────────────────────────────────────────────────────────────────────
 st.markdown(f"""
-<div class="bg-gradient-to-r from-blue-900 to-blue-600 rounded-2xl px-8 py-5 mb-4 shadow-lg flex items-center justify-between">
-  <div>
-    <h1 class="text-white text-2xl font-bold tracking-tight m-0 p-0">&#128202; FinDiag Pro &mdash; Financial Health Diagnostics</h1>
-    <p class="text-blue-200 text-sm mt-1 m-0">{org_name} &nbsp;&bull;&nbsp; {fiscal_year} &nbsp;&bull;&nbsp; AI-Enhanced Early-Warning &amp; Decision Support System</p>
-  </div>
-  <div class="text-right">
-    <span class="bg-blue-800 text-blue-100 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Live Dashboard</span>
+<div style="background:linear-gradient(135deg,#0B1F3A 0%,#1E3A8A 60%,#1D4ED8 100%);
+     border-radius:16px;padding:1.4rem 2rem;margin-bottom:1rem;
+     box-shadow:0 4px 20px rgba(11,31,58,0.35);">
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <div style="background:rgba(255,255,255,0.12);border-radius:12px;padding:10px 12px;font-size:1.8rem;line-height:1;">
+        &#128202;
+      </div>
+      <div>
+        <h1 style="color:#FFFFFF;margin:0;font-size:1.55rem;font-weight:800;letter-spacing:-0.02em;">
+          FinDiag Pro
+        </h1>
+        <p style="color:#93C5FD;margin:2px 0 0;font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;font-weight:500;">
+          AI-Enhanced Financial Health Diagnostics System
+        </p>
+      </div>
+    </div>
+    <div class="text-right">
+      <p style="color:#F1F5F9;font-weight:700;font-size:0.95rem;margin:0;">{org_name}</p>
+      <p style="color:#93C5FD;font-size:0.75rem;margin:2px 0 4px;">{fiscal_year} &nbsp;&bull;&nbsp; Decision Support Platform</p>
+      <span style="background:#16A34A;color:#FFFFFF;font-size:0.65rem;font-weight:700;
+                   padding:2px 10px;border-radius:999px;letter-spacing:0.08em;">&#9679; LIVE</span>
+    </div>
   </div>
 </div>
 """, unsafe_allow_html=True)
@@ -227,14 +339,18 @@ with tab1:
         fig_gauge.update_layout(height=280, margin=dict(t=50, b=10, l=20, r=20))
         st.plotly_chart(fig_gauge, use_container_width=True)
 
-        badge = {
-            "Healthy":       "bg-green-100 text-green-800 border border-green-300",
-            "Moderate Risk": "bg-yellow-100 text-yellow-800 border border-yellow-300",
-            "High Risk":     "bg-red-100 text-red-800 border border-red-300",
-        }[health["category"]]
+        _badge_styles = {
+            "Healthy":       "background:#DCFCE7;color:#14532D;border:1.5px solid #86EFAC;",
+            "Moderate Risk": "background:#FEF3C7;color:#78350F;border:1.5px solid #FCD34D;",
+            "High Risk":     "background:#FEE2E2;color:#7F1D1D;border:1.5px solid #FCA5A5;",
+        }
         st.markdown(f"""
-        <div class="text-center mt-1">
-          <span class="{badge} px-4 py-1 rounded-full text-base font-semibold">{health["category"]}</span>
+        <div style="text-align:center;margin-top:6px;">
+          <span style="{_badge_styles[health['category']]}
+                        padding:5px 18px;border-radius:999px;font-size:0.9rem;
+                        font-weight:700;letter-spacing:0.03em;">
+            {health["category"]}
+          </span>
         </div>""", unsafe_allow_html=True)
 
     # Radar / dimension breakdown
@@ -247,9 +363,9 @@ with tab1:
             r=vals + [vals[0]],
             theta=labels + [labels[0]],
             fill="toself",
-            fillcolor="rgba(24,95,165,0.15)",
-            line=dict(color="#185FA5", width=2),
-            marker=dict(size=6, color="#185FA5"),
+            fillcolor="rgba(29,78,216,0.15)",
+            line=dict(color=C_BLUE, width=2),
+            marker=dict(size=6, color=C_BLUE),
         ))
         fig_radar.update_layout(
             polar=dict(radialaxis=dict(visible=True, range=[0,100],
@@ -260,17 +376,19 @@ with tab1:
         )
         st.plotly_chart(fig_radar, use_container_width=True)
 
-        # Dimension bars (Tailwind)
+        # Dimension bars
         for lbl, val in zip(labels, vals):
-            bar_cls  = "bg-green-500" if val >= 70 else "bg-yellow-400" if val >= 50 else "bg-red-500"
-            text_cls = "text-green-700" if val >= 70 else "text-yellow-700" if val >= 50 else "text-red-700"
+            bar_col  = "#16A34A" if val >= 70 else "#D97706" if val >= 50 else "#DC2626"
+            text_col = "#15803D" if val >= 70 else "#92400E" if val >= 50 else "#991B1B"
             st.markdown(f"""
-            <div class="flex items-center gap-2 mb-1 text-xs">
-              <span class="w-24 text-gray-500 font-medium">{lbl}</span>
-              <div class="flex-1 bg-gray-100 rounded-full h-2">
-                <div class="{bar_cls} h-2 rounded-full" style="width:{val}%"></div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;">
+              <span style="width:90px;color:#64748B;font-weight:600;">{lbl}</span>
+              <div style="flex:1;background:#E2E8F0;border-radius:999px;height:8px;">
+                <div style="width:{val}%;background:{bar_col};height:8px;
+                     border-radius:999px;transition:width 0.4s;"></div>
               </div>
-              <span class="w-8 text-right font-bold {text_cls}">{val}</span>
+              <span style="width:30px;text-align:right;font-weight:800;color:{text_col};
+                           font-size:11px;">{val}</span>
             </div>""", unsafe_allow_html=True)
 
     st.markdown("---")
@@ -294,7 +412,7 @@ with tab1:
         fig_trend = px.line(rolling, x="date", y="rolling_score",
                             title="Financial Health Score Trend",
                             labels={"rolling_score": "Score", "date": "Month"},
-                            color_discrete_sequence=["#185FA5"])
+                            color_discrete_sequence=[C_BLUE])
         fig_trend.add_hline(y=75, line_dash="dash", line_color="#16a34a",
                             annotation_text="Healthy ≥ 75")
         fig_trend.add_hline(y=50, line_dash="dash", line_color="#dc2626",
@@ -352,10 +470,10 @@ with tab2:
         fig_liq = go.Figure()
         fig_liq.add_trace(go.Scatter(x=ratios_df["quarter"], y=ratios_df["current_ratio"],
                                      name="Current Ratio", mode="lines+markers",
-                                     line=dict(color="#185FA5", width=2.5), marker=dict(size=7)))
+                                     line=dict(color=C_BLUE, width=2.5), marker=dict(size=7)))
         fig_liq.add_trace(go.Scatter(x=ratios_df["quarter"], y=ratios_df["quick_ratio"],
                                      name="Quick Ratio", mode="lines+markers",
-                                     line=dict(color="#1D9E75", width=2.5, dash="dash"),
+                                     line=dict(color=C_TEAL, width=2.5, dash="dash"),
                                      marker=dict(size=7)))
         fig_liq.add_hline(y=1.5, line_dash="dot", line_color="#dc2626",
                           annotation_text="Current Ratio benchmark")
@@ -386,12 +504,12 @@ with tab2:
     fig_margin = make_subplots(specs=[[{"secondary_y": False}]])
     fig_margin.add_trace(go.Scatter(x=monthly_df["date"], y=monthly_df["gpm"],
                                     name="Gross Profit Margin %",
-                                    line=dict(color="#1D9E75", width=2.5),
-                                    fill="tozeroy", fillcolor="rgba(29,158,117,0.07)"))
+                                    line=dict(color=C_TEAL, width=2.5),
+                                    fill="tozeroy", fillcolor="rgba(13,148,136,0.07)"))
     fig_margin.add_trace(go.Scatter(x=monthly_df["date"], y=monthly_df["npm"],
                                     name="Net Profit Margin %",
-                                    line=dict(color="#185FA5", width=2.5),
-                                    fill="tozeroy", fillcolor="rgba(24,95,165,0.07)"))
+                                    line=dict(color=C_BLUE, width=2.5),
+                                    fill="tozeroy", fillcolor="rgba(29,78,216,0.07)"))
     fig_margin.update_layout(title="Profit Margin Trends — Monthly", height=280,
                              margin=dict(t=50,b=20),
                              yaxis_title="Margin %",
@@ -404,7 +522,7 @@ with tab2:
         fig_it = go.Figure()
         fig_it.add_trace(go.Scatter(x=ratios_df["quarter"], y=ratios_df["inventory_turnover"],
                                     name="Inventory Turnover", mode="lines+markers",
-                                    line=dict(color="#7C3AED", width=2.5), marker=dict(size=7)))
+                                    line=dict(color=C_INDIGO, width=2.5), marker=dict(size=7)))
         fig_it.add_hline(y=8.0, line_dash="dot", line_color="#dc2626",
                          annotation_text="Industry min ~8x")
         fig_it.update_layout(title="Inventory Turnover — Quarterly", height=250,
@@ -416,7 +534,7 @@ with tab2:
         fig_at = go.Figure()
         fig_at.add_trace(go.Scatter(x=ratios_df["quarter"], y=ratios_df["asset_turnover"],
                                     name="Asset Turnover", mode="lines+markers",
-                                    line=dict(color="#0891B2", width=2.5), marker=dict(size=7)))
+                                    line=dict(color=C_TEAL, width=2.5), marker=dict(size=7)))
         fig_at.update_layout(title="Asset Turnover — Quarterly", height=250,
                              margin=dict(t=50, b=20), yaxis_title="Turns (x)",
                              showlegend=False)
@@ -506,18 +624,18 @@ with tab3:
         fig_var.add_trace(go.Bar(name="Budget 2024",
                                  x=variance_df["category"],
                                  y=variance_df["budget_2024"] / 1000,
-                                 marker_color="rgba(24,95,165,0.55)",
-                                 marker_line=dict(color="#185FA5", width=1)))
+                                 marker_color="rgba(29,78,216,0.55)",
+                                 marker_line=dict(color=C_BLUE, width=1)))
         fig_var.add_trace(go.Bar(name="Actual 2024",
                                  x=variance_df["category"],
                                  y=variance_df["actual_2024"] / 1000,
                                  marker_color="rgba(220,38,38,0.55)",
-                                 marker_line=dict(color="#dc2626", width=1)))
+                                 marker_line=dict(color=C_RED, width=1)))
         fig_var.add_trace(go.Bar(name="Actual 2023",
                                  x=variance_df["category"],
                                  y=variance_df["actual_2023"] / 1000,
-                                 marker_color="rgba(29,158,117,0.45)",
-                                 marker_line=dict(color="#1D9E75", width=1)))
+                                 marker_color="rgba(13,148,136,0.45)",
+                                 marker_line=dict(color=C_TEAL, width=1)))
         fig_var.update_layout(barmode="group", title="Budget vs Actual vs Prior Year (R billions)",
                               height=300, margin=dict(t=50,b=20),
                               yaxis_title="R billions",
@@ -547,7 +665,7 @@ with tab3:
     fig_trend_annual = go.Figure()
     fig_trend_annual.add_trace(go.Bar(
         x=trend_df["year"].astype(str), y=trend_df["revenue"] / 1000,
-        name="Revenue", marker_color="rgba(24,95,165,0.55)"))
+        name="Revenue", marker_color="rgba(29,78,216,0.55)"))
     fig_trend_annual.update_layout(
         title="Pick n Pay Annual Revenue Trend (2021–2025, R billions)",
         height=260, margin=dict(t=50,b=20), yaxis_title="R billions", showlegend=False)
@@ -556,7 +674,7 @@ with tab3:
     # Monthly revenue vs expenses
     fig_rev = go.Figure()
     fig_rev.add_trace(go.Bar(x=monthly_df["date"], y=monthly_df["revenue"] / 1000,
-                             name="Revenue", marker_color="rgba(24,95,165,0.4)"))
+                             name="Revenue", marker_color="rgba(29,78,216,0.4)"))
     fig_rev.add_trace(go.Scatter(x=monthly_df["date"],
                                  y=monthly_df["operating_expenses"] / 1000,
                                  name="Operating Expenses",
@@ -573,14 +691,23 @@ with tab3:
         for _, row in variance_df.iterrows():
             if row["status"] == "Unfavourable":
                 pct = abs(row["variance_pct"])
-                cls  = "bg-red-50 border-red-500"    if pct > 15 else "bg-yellow-50 border-yellow-400"
-                icon = "🔴" if pct > 15 else "🟡"
-                note = "Immediate review recommended." if pct > 15 else "Monitor closely."
+                if pct > 15:
+                    bg, border, icon = "#FFF1F2", "#E11D48", "🔴"
+                    note = "Immediate executive review required."
+                else:
+                    bg, border, icon = "#FFFBEB", "#D97706", "🟡"
+                    note = "Monitor closely — within tolerance."
                 st.markdown(f"""
-                <div class="border-l-4 {cls} px-4 py-3 rounded-r-lg my-2">
-                  <span class="font-semibold">{icon} {row['category']}</span>
-                  <span class="text-gray-600 text-sm"> &mdash; Unfavourable variance of
-                  R{abs(row['variance'])/1000:.2f}B ({pct:.1f}% vs budget). {note}</span>
+                <div style="background:{bg};border-left:4px solid {border};
+                     padding:10px 16px;border-radius:0 10px 10px 0;margin:6px 0;
+                     box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+                  <span style="font-weight:700;color:#0F172A;font-size:13px;">
+                    {icon} {row['category']}
+                  </span>
+                  <span style="color:#475569;font-size:12px;">
+                    &nbsp;&mdash; R{abs(row['variance'])/1000:.2f}B unfavourable
+                    ({pct:.1f}% vs budget). {note}
+                  </span>
                 </div>""", unsafe_allow_html=True)
 
 
@@ -612,7 +739,7 @@ with tab4:
 
     with c1:
         # Expense scatter with anomaly highlights
-        colors = ["#dc2626" if a else "#185FA5" for a in anomaly_df["anomaly"]]
+        colors = [C_RED if a else C_BLUE for a in anomaly_df["anomaly"]]
         sizes  = [14 if a else 8 for a in anomaly_df["anomaly"]]
         fig_sc = go.Figure()
         fig_sc.add_trace(go.Scatter(
@@ -674,9 +801,9 @@ with tab4:
     fig_multi = make_subplots(rows=2, cols=2, subplot_titles=[
         "Revenue", "Operating Expenses", "Net Profit", "Net Cash Flow"])
     for i, (col, name, color) in enumerate([
-        ("revenue", "Revenue", "#185FA5"),
+        ("revenue", "Revenue", C_BLUE),
         ("operating_expenses", "Op. Expenses", "#dc2626"),
-        ("net_profit", "Net Profit", "#1D9E75"),
+        ("net_profit", "Net Profit", C_TEAL),
         ("net_cashflow", "Cash Flow", "#f59e0b"),
     ]):
         r, c = i // 2 + 1, i % 2 + 1
@@ -723,17 +850,22 @@ with tab5:
 
     cols = st.columns(3)
     for i, (label, level) in enumerate(risks.items()):
-        bg   = "bg-red-50 border border-red-200"   if "HIGH"   in level else \
-               "bg-yellow-50 border border-yellow-200" if "MEDIUM" in level else \
-               "bg-green-50 border border-green-200"
-        tcls = "text-red-800"    if "HIGH"   in level else \
-               "text-yellow-800" if "MEDIUM" in level else \
-               "text-green-800"
+        if "HIGH" in level:
+            bg, border, tc, dot = "#FFF1F2","#E11D48","#9F1239","#E11D48"
+        elif "MEDIUM" in level:
+            bg, border, tc, dot = "#FFFBEB","#D97706","#78350F","#D97706"
+        else:
+            bg, border, tc, dot = "#F0FDF4","#16A34A","#14532D","#16A34A"
         cols[i % 3].markdown(f"""
-        <div class="{bg} rounded-xl p-4 text-center mb-2 shadow-sm">
-          <div class="text-2xl">{level.split()[0]}</div>
-          <div class="text-xs font-bold {tcls} mt-1 uppercase tracking-wide">{label}</div>
-          <div class="text-xs {tcls} font-medium mt-0.5">{level.split()[-1]}</div>
+        <div style="background:{bg};border:1.5px solid {border};border-radius:12px;
+             padding:14px 10px;text-align:center;margin-bottom:8px;
+             box-shadow:0 2px 6px rgba(0,0,0,0.07);">
+          <div style="font-size:1.5rem;line-height:1;">{level.split()[0]}</div>
+          <div style="font-size:0.7rem;font-weight:800;color:{tc};margin-top:5px;
+                      letter-spacing:0.08em;text-transform:uppercase;">{label}</div>
+          <div style="font-size:0.7rem;font-weight:600;color:{dot};margin-top:2px;">
+            &#9679; {level.split()[-1]}
+          </div>
         </div>""", unsafe_allow_html=True)
 
     st.markdown("---")
@@ -763,14 +895,20 @@ with tab5:
                        f"YoY revenue growth is a key stabilising factor for the organisation."))
 
         for level, title, desc in alerts:
-            cls  = "bg-red-50 border-red-500"    if level == "critical" else \
-                   "bg-yellow-50 border-yellow-400" if level == "warning"  else \
-                   "bg-blue-50 border-blue-400"
-            icon = "🔴" if level == "critical" else "🟡" if level == "warning" else "🔵"
+            if level == "critical":
+                bg, border, icon = "#FFF1F2", "#E11D48", "🔴"
+            elif level == "warning":
+                bg, border, icon = "#FFFBEB", "#D97706", "🟡"
+            else:
+                bg, border, icon = "#EFF6FF", "#2563EB", "🔵"
             st.markdown(f"""
-            <div class="border-l-4 {cls} px-4 py-3 rounded-r-xl my-2">
-              <p class="font-semibold text-sm m-0">{icon} {title}</p>
-              <p class="text-xs text-gray-500 m-0 mt-1">{desc}</p>
+            <div style="background:{bg};border-left:4px solid {border};
+                 padding:10px 16px;border-radius:0 10px 10px 0;margin:6px 0;
+                 box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+              <p style="font-weight:700;color:#0F172A;font-size:13px;margin:0;">
+                {icon}&nbsp; {title}
+              </p>
+              <p style="color:#64748B;font-size:11.5px;margin:3px 0 0;">{desc}</p>
             </div>""", unsafe_allow_html=True)
 
     # Risk radar
@@ -814,8 +952,8 @@ with tab5:
 
     fig_fcst = go.Figure()
     fig_fcst.add_trace(go.Scatter(x=forecast_months, y=[v/1e3 for v in inflow_f],
-                                  name="Projected Inflow", line=dict(color="#1D9E75", width=2.5),
-                                  fill="tozeroy", fillcolor="rgba(29,158,117,0.08)"))
+                                  name="Projected Inflow", line=dict(color=C_TEAL, width=2.5),
+                                  fill="tozeroy", fillcolor="rgba(13,148,136,0.08)"))
     fig_fcst.add_trace(go.Scatter(x=forecast_months, y=[v/1e3 for v in outflow_f],
                                   name="Projected Outflow", line=dict(color="#dc2626", width=2.5, dash="dash"),
                                   fill="tozeroy", fillcolor="rgba(220,38,38,0.06)"))
@@ -842,17 +980,29 @@ with tab5:
          f"Revenue growing at {health['gpm']:.1f}% gross margin. Channel growth into cash reserves to rebuild liquidity."),
     ]
     for icon, title, desc in recs:
-        cls = "bg-red-50 border-red-500"    if icon == "🔴" else \
-              "bg-yellow-50 border-yellow-400" if icon == "🟡" else \
-              "bg-green-50 border-green-500"
+        if icon == "🔴":
+            bg, border = "#FFF1F2", "#E11D48"
+        elif icon == "🟡":
+            bg, border = "#FFFBEB", "#D97706"
+        else:
+            bg, border = "#F0FDF4", "#16A34A"
         st.markdown(f"""
-        <div class="border-l-4 {cls} px-4 py-3 rounded-r-xl my-2 shadow-sm">
-          <p class="font-semibold text-sm m-0">{icon} {title}</p>
-          <p class="text-xs text-gray-600 m-0 mt-1">{desc}</p>
+        <div style="background:{bg};border-left:5px solid {border};
+             padding:12px 18px;border-radius:0 12px 12px 0;margin:8px 0;
+             box-shadow:0 2px 6px rgba(0,0,0,0.07);">
+          <p style="font-weight:800;color:#0F172A;font-size:13px;margin:0;">
+            {icon}&nbsp; {title}
+          </p>
+          <p style="color:#475569;font-size:12px;margin:4px 0 0;line-height:1.5;">{desc}</p>
         </div>""", unsafe_allow_html=True)
 
     st.markdown("""
-    <div class="mt-6 border-t border-gray-200 pt-4 flex items-center justify-between text-xs text-gray-400">
-      <span>FinDiag Pro v1.0 &mdash; AI-Enhanced Financial Diagnostics</span>
-      <span>Managerial Finance PBL &bull; Pathway B &bull; Durban University of Technology</span>
+    <div style="margin-top:2rem;border-top:1px solid #E2E8F0;padding-top:14px;
+         display:flex;justify-content:space-between;align-items:center;">
+      <span style="color:#94A3B8;font-size:11px;font-weight:600;">
+        FinDiag Pro v1.0 &mdash; AI-Enhanced Financial Diagnostics
+      </span>
+      <span style="color:#94A3B8;font-size:11px;">
+        Managerial Finance PBL &bull; Pathway B &bull; Durban University of Technology
+      </span>
     </div>""", unsafe_allow_html=True)
