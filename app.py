@@ -50,85 +50,6 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── Tailwind CDN + Professional Business Theme ────────────────────────────────
-st.markdown("""
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-<style>
-  /* ── Page & App Shell ───────────────────────────────────── */
-  [data-testid="stAppViewContainer"] > .main {
-      background-color: #EDF2F7;
-  }
-  .block-container { padding-top: 1.2rem !important; }
-
-  /* ── Sidebar ────────────────────────────────────────────── */
-  [data-testid="stSidebar"] > div:first-child {
-      background: linear-gradient(180deg, #0B1F3A 0%, #1A3A6E 100%);
-  }
-  [data-testid="stSidebar"] .stMarkdown,
-  [data-testid="stSidebar"] label,
-  [data-testid="stSidebar"] .stSelectbox label,
-  [data-testid="stSidebar"] .stSlider label,
-  [data-testid="stSidebar"] .stTextInput label,
-  [data-testid="stSidebar"] p,
-  [data-testid="stSidebar"] span { color: #CBD5E1 !important; }
-  [data-testid="stSidebar"] h3 { color: #F1F5F9 !important; }
-  [data-testid="stSidebar"] hr { border-color: #334155; }
-  [data-testid="stSidebar"] .stCaption { color: #94A3B8 !important; }
-
-  /* ── Streamlit Top Header ───────────────────────────────── */
-  [data-testid="stHeader"] { background: transparent !important; }
-
-  /* ── Tabs ───────────────────────────────────────────────── */
-  .stTabs [data-baseweb="tab-list"] {
-      background: #FFFFFF;
-      border-radius: 10px;
-      border: 1px solid #E2E8F0;
-      padding: 4px;
-      gap: 2px;
-  }
-  .stTabs [data-baseweb="tab"] {
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 0.8rem;
-      color: #475569;
-      padding: 6px 14px;
-  }
-  .stTabs [aria-selected="true"] {
-      background: #1E3A8A !important;
-      color: white !important;
-  }
-
-  /* ── Metric Widgets ─────────────────────────────────────── */
-  div[data-testid="metric-container"] {
-      background: #FFFFFF;
-      border-radius: 12px;
-      padding: 1rem;
-      border: 1px solid #E2E8F0;
-      box-shadow: 0 1px 4px rgba(15,32,68,0.08);
-  }
-  div[data-testid="metric-container"] label {
-      color: #64748B !important;
-      font-size: 0.72rem !important;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      font-weight: 600 !important;
-  }
-  div[data-testid="metric-container"] [data-testid="stMetricValue"] {
-      color: #0F172A !important;
-      font-size: 1.5rem !important;
-      font-weight: 700 !important;
-  }
-
-  /* ── DataFrames ─────────────────────────────────────────── */
-  [data-testid="stDataFrame"] { border-radius: 10px; overflow: hidden; }
-
-  /* ── Section headings ───────────────────────────────────── */
-  h2, h3 { color: #0B1F3A !important; font-weight: 700 !important; }
-
-  /* ── Markdown spacing ───────────────────────────────────── */
-  .stMarkdown > div { padding-top: 0 !important; }
-</style>
-""", unsafe_allow_html=True)
 
 
 # ── Data loaders ─────────────────────────────────────────────────────────────
@@ -265,9 +186,6 @@ st.markdown(f"""
      box-shadow:0 4px 20px rgba(11,31,58,0.35);">
   <div class="flex items-center justify-between">
     <div class="flex items-center gap-4">
-      <div style="background:rgba(255,255,255,0.12);border-radius:12px;padding:10px 12px;font-size:1.8rem;line-height:1;">
-        &#128202;
-      </div>
       <div>
         <h1 style="color:#FFFFFF;margin:0;font-size:1.55rem;font-weight:800;letter-spacing:-0.02em;">
           FinDiag Pro
