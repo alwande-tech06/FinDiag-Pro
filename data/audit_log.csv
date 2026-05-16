@@ -1,0 +1,36 @@
+timestamp,user,action
+2026-05-16 11:45:20,admin@findiag.com,Login — Role: Admin
+2026-05-16 11:45:22,admin@findiag.com,Dashboard viewed — Admin
+2026-05-16 11:46:09,admin@findiag.com,Logout
+2026-05-16 11:47:42,analyst@findiag.com,Login — Role: Analyst
+2026-05-16 11:47:42,analyst@findiag.com,Dashboard viewed — Analyst
+2026-05-16 11:48:34,analyst@findiag.com,Logout
+2026-05-16 11:50:06,viewer@findiag.com,Login — Role: Viewer
+2026-05-16 11:50:06,viewer@findiag.com,Dashboard viewed — Viewer
+2026-05-16 16:18:50,admin@findiag.com,Login — Role: Admin
+2026-05-16 16:18:54,admin@findiag.com,Dashboard viewed — Admin
+2026-05-16 16:19:32,admin@findiag.com,Removed user: analyst@findiag.com
+2026-05-16 16:22:49,admin@findiag.com,Logout
+2026-05-16 16:25:46,viewer@findiag.com,Login — Role: Viewer
+2026-05-16 16:25:47,viewer@findiag.com,Dashboard viewed — Viewer
+2026-05-16 16:27:36,viewer@findiag.com,Logout
+2026-05-16 16:31:07,analyst@findiag.com,Login — Role: Analyst
+2026-05-16 16:31:08,analyst@findiag.com,Dashboard viewed — Analyst
+2026-05-16 16:32:05,analyst@findiag.com,Logout
+2026-05-16 16:32:38,admin@findiag.com,Login — Role: Admin
+2026-05-16 16:32:39,admin@findiag.com,Dashboard viewed — Admin
+2026-05-16 16:40:22,admin@findiag.com,Logout
+2026-05-16 17:20:28,admin@findiag.com,Login — Role: Admin
+2026-05-16 17:20:29,admin@findiag.com,Dashboard viewed — Admin
+2026-05-16 17:24:53,admin@findiag.com,Login — Role: Admin
+2026-05-16 17:24:54,admin@findiag.com,Dashboard viewed — Admin
+2026-05-16 17:39:21,admin@findiag.com,Login — Role: Admin
+2026-05-16 17:39:21,admin@findiag.com,Dashboard viewed — Admin
+2026-05-17 01:18:23,viewer@findiag.com,Login — Role: Viewer
+2026-05-17 01:18:24,viewer@findiag.com,Dashboard viewed — Viewer
+2026-05-17 01:19:23,admin@findiag.com,Login — Role: Admin
+2026-05-17 01:19:24,admin@findiag.com,Dashboard viewed — Admin
+2026-05-17 01:27:25,admin@findiag.com,Login — Role: Admin
+2026-05-17 01:27:25,admin@findiag.com,Dashboard viewed — Admin
+2026-05-17 01:28:26,admin@findiag.com,Changed role of analyst@findiag.com to Viewer
+2026-05-17 01:28:35,admin@findiag.com,Changed role of analyst@findiag.com to Analyst
