@@ -713,28 +713,99 @@ if not st.session_state.logged_access:
     log_action(_user["email"], f"Dashboard viewed — {role}")
     st.session_state.logged_access = True
 
+# ── Dashboard theme — blended with homepage dark palette ─────────────────────
+st.markdown("""<style>
+[data-testid="stAppViewContainer"] {
+    background-color:#04071a !important;
+    background-image:radial-gradient(ellipse 90% 50% at 50% 0%,rgba(0,48,135,0.4) 0%,transparent 65%),radial-gradient(ellipse 50% 40% at 100% 100%,rgba(212,0,110,0.15) 0%,transparent 60%),linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px) !important;
+    background-size:100% 100%,100% 100%,48px 48px,48px 48px !important;
+}
+[data-testid="stSidebar"] {
+    background-color:#07101f !important;
+    border-right:1px solid rgba(255,255,255,0.06) !important;
+}
+[data-testid="stSidebar"] section {background-color:#07101f !important;}
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] span,
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] h3 {color:#c8d6f0 !important;}
+[data-testid="stSidebar"] .stCaption p {color:#8694b5 !important;}
+[data-testid="stSidebar"] hr {border-color:rgba(255,255,255,0.07) !important;}
+[data-testid="stSidebar"] .stTextInput > div > div > input {
+    background:rgba(255,255,255,0.05) !important;
+    border:1px solid rgba(255,255,255,0.1) !important;
+    color:#e8edf8 !important;
+    border-radius:8px !important;
+}
+[data-testid="stSidebar"] .stSelectbox > div > div {
+    background:rgba(255,255,255,0.05) !important;
+    border:1px solid rgba(255,255,255,0.1) !important;
+    color:#e8edf8 !important;
+    border-radius:8px !important;
+}
+[data-testid="stSidebar"] .stSlider label {color:#8694b5 !important;}
+[data-testid="stSidebar"] .stButton > button {
+    background:rgba(0,48,135,0.3) !important;
+    border:1px solid rgba(77,139,255,0.25) !important;
+    color:#a8c4ff !important;
+    border-radius:8px !important;
+}
+[data-testid="stSidebar"] .stDownloadButton > button {
+    background:rgba(0,48,135,0.3) !important;
+    border:1px solid rgba(77,139,255,0.25) !important;
+    color:#a8c4ff !important;
+    border-radius:8px !important;
+}
+.stTabs [data-testid="stTab"] {
+    background:transparent !important;
+    color:#8694b5 !important;
+    font-weight:600 !important;
+}
+.stTabs [aria-selected="true"] {
+    color:#e8edf8 !important;
+    border-bottom-color:#4d8bff !important;
+}
+.stTabs [data-testid="stTabsTabList"] {
+    border-bottom:1px solid rgba(255,255,255,0.08) !important;
+}
+[data-testid="stMetric"] {
+    background:#111e36 !important;
+    border:1px solid rgba(255,255,255,0.07) !important;
+    border-radius:12px !important;
+    padding:1rem !important;
+}
+[data-testid="stMetricLabel"] p {color:#8694b5 !important;}
+[data-testid="stMetricValue"] {color:#e8edf8 !important;}
+[data-testid="stMetricDelta"] {color:#00c896 !important;}
+.stDataFrame {background:#111e36 !important;border-radius:10px !important;}
+h1,h2,h3,h4 {color:#e8edf8 !important;}
+p {color:#c8d6f0 !important;}
+</style>""", unsafe_allow_html=True)
+
 # ── Header ────────────────────────────────────────────────────────────────────
 st.markdown(f"""
-<div style="background:linear-gradient(135deg,#0B1F3A 0%,#1E3A8A 60%,#1D4ED8 100%);
+<div style="background:linear-gradient(135deg,#003087 0%,#0a1e46 60%,#111e36 100%);
      border-radius:16px;padding:1.4rem 2rem;margin-bottom:1rem;
-     box-shadow:0 4px 20px rgba(11,31,58,0.35);">
+     border:1px solid rgba(77,139,255,0.15);
+     box-shadow:0 4px 24px rgba(0,0,0,0.45);">
   <div style="display:flex;justify-content:space-between;align-items:center;">
     <div>
-      <h1 style="color:#FFFFFF;margin:0;font-size:1.55rem;font-weight:800;letter-spacing:-0.02em;">
+      <h1 style="color:#e8edf8;margin:0;font-size:1.55rem;font-weight:800;letter-spacing:-0.02em;">
         FinDiag Pro
       </h1>
-      <p style="color:#93C5FD;margin:2px 0 0;font-size:0.78rem;letter-spacing:0.08em;
-                text-transform:uppercase;font-weight:500;">
-        AI-Enhanced Financial Health Diagnostics System
+      <p style="color:#7ab3ff;margin:2px 0 0;font-size:0.78rem;letter-spacing:0.1em;
+                text-transform:uppercase;font-weight:600;">
+        AI-Enhanced Financial Health Diagnostics
       </p>
     </div>
     <div style="text-align:right;">
-      <p style="color:#F1F5F9;font-weight:700;font-size:0.95rem;margin:0;">{org_name}</p>
-      <p style="color:#93C5FD;font-size:0.75rem;margin:2px 0 4px;">
+      <p style="color:#e8edf8;font-weight:700;font-size:0.95rem;margin:0;">{org_name}</p>
+      <p style="color:#8694b5;font-size:0.75rem;margin:2px 0 4px;">
         {fiscal_year} &nbsp;&bull;&nbsp; Decision Support Platform
       </p>
-      <span style="background:#16A34A;color:#FFFFFF;font-size:0.65rem;font-weight:700;
-                   padding:2px 10px;border-radius:999px;letter-spacing:0.08em;">
+      <span style="background:rgba(0,200,150,0.15);color:#00c896;font-size:0.65rem;font-weight:700;
+                   padding:3px 12px;border-radius:999px;letter-spacing:0.1em;
+                   border:1px solid rgba(0,200,150,0.3);">
         &#9679; LIVE
       </span>
     </div>
