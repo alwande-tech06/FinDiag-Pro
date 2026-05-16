@@ -252,130 +252,91 @@ if not st.session_state.authenticated and st.session_state.page == "landing":
 # LOGIN / REGISTER PAGE
 # ══════════════════════════════════════════════════════════════════════════════
 if not st.session_state.authenticated and st.session_state.page == "login":
-    st.markdown("""
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Barlow+Condensed:wght@700;800;900&display=swap" rel="stylesheet">
-    <style>
-    #MainMenu, footer, [data-testid="stHeader"], [data-testid="stToolbar"] { visibility: hidden; }
-
-    /* ── Full-page background ─────────────────────────────────── */
-    [data-testid="stAppViewContainer"] {
-        background-color: #04071a !important;
-        background-image:
-            radial-gradient(ellipse 120% 70% at 60% -5%,  rgba(0,48,135,0.55) 0%, transparent 65%),
-            radial-gradient(ellipse 70%  60% at -10% 110%, rgba(212,0,110,0.30) 0%, transparent 60%),
-            linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.028) 1px, transparent 1px) !important;
-        background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px !important;
-    }
-
-    /* ── Floating card (the block-container IS the card) ─────── */
-    .block-container {
-        background: #0c1628 !important;
-        border: 1px solid rgba(255,255,255,0.09) !important;
-        border-radius: 20px !important;
-        max-width: 460px !important;
-        padding: 2.8rem 2.6rem 2.2rem !important;
-        box-shadow: 0 28px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(77,139,255,0.06) !important;
-        margin-top: 5vh !important;
-    }
-    * { font-family: 'Inter', sans-serif !important; }
-
-    /* ── Tab buttons ──────────────────────────────────────────── */
-    .stButton > button {
-        border-radius: 10px !important;
-        font-weight: 600 !important;
-        font-size: 0.9rem !important;
-        height: 44px !important;
-        transition: all 0.18s ease !important;
-    }
-    /* active tab */
-    .stButton > button[kind="primary"] {
-        background: rgba(0,48,135,0.5) !important;
-        border: 1.5px solid rgba(77,139,255,0.45) !important;
-        color: #7ab3ff !important;
-        box-shadow: 0 0 0 3px rgba(77,139,255,0.1) !important;
-    }
-    /* inactive tab + back button */
-    .stButton > button[kind="secondary"] {
-        background: rgba(255,255,255,0.04) !important;
-        border: 1px solid rgba(255,255,255,0.1) !important;
-        color: #8694b5 !important;
-    }
-    .stButton > button[kind="secondary"]:hover {
-        background: rgba(255,255,255,0.08) !important;
-        color: #e8edf8 !important;
-    }
-
-    /* ── Form submit buttons ──────────────────────────────────── */
-    div[data-testid="stFormSubmitButton"] > button {
-        background: linear-gradient(135deg, #003087 0%, #1a52c4 100%) !important;
-        border: none !important;
-        border-radius: 11px !important;
-        color: #fff !important;
-        font-weight: 700 !important;
-        font-size: 1rem !important;
-        height: 50px !important;
-        box-shadow: 0 8px 28px rgba(0,48,135,0.45) !important;
-        letter-spacing: 0.02em !important;
-        margin-top: 0.2rem !important;
-    }
-    div[data-testid="stFormSubmitButton"] > button:hover {
-        box-shadow: 0 12px 36px rgba(0,48,135,0.65) !important;
-        filter: brightness(1.08) !important;
-    }
-
-    /* ── Inputs ───────────────────────────────────────────────── */
-    .stTextInput label {
-        color: #8694b5 !important;
-        font-size: 0.79rem !important;
-        font-weight: 600 !important;
-        letter-spacing: 0.06em !important;
-        text-transform: uppercase !important;
-    }
-    .stTextInput > div > div > input {
-        background: rgba(255,255,255,0.05) !important;
-        border: 1.5px solid rgba(255,255,255,0.1) !important;
-        border-radius: 10px !important;
-        color: #e8edf8 !important;
-        padding: 0.65rem 1rem !important;
-        font-size: 0.95rem !important;
-        caret-color: #4d8bff !important;
-    }
-    .stTextInput > div > div > input:focus {
-        border-color: #3d7eff !important;
-        box-shadow: 0 0 0 3px rgba(61,126,255,0.15) !important;
-        background: rgba(61,126,255,0.06) !important;
-    }
-    .stTextInput > div > div > input::placeholder { color: #3a4d6a !important; }
-
-    /* ── Selectbox ────────────────────────────────────────────── */
-    .stSelectbox label {
-        color: #8694b5 !important;
-        font-size: 0.79rem !important;
-        font-weight: 600 !important;
-        letter-spacing: 0.06em !important;
-        text-transform: uppercase !important;
-    }
-    .stSelectbox > div > div {
-        background: rgba(255,255,255,0.05) !important;
-        border: 1.5px solid rgba(255,255,255,0.1) !important;
-        border-radius: 10px !important;
-        color: #e8edf8 !important;
-    }
-
-    /* ── Checkbox ─────────────────────────────────────────────── */
-    .stCheckbox label p { color: #8694b5 !important; font-size: 0.85rem !important; }
-
-    /* ── Form container ───────────────────────────────────────── */
-    [data-testid="stForm"] {
-        background: transparent !important;
-        border: none !important;
-        padding: 0 !important;
-    }
-
-    /* ── Divider ──────────────────────────────────────────────── */
-    hr { border-color: rgba(255,255,255,0.07) !important; margin: 1rem 0 !important; }
-    </style>""", unsafe_allow_html=True)
+    st.markdown('<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Barlow+Condensed:wght@700;800;900&display=swap" rel="stylesheet">', unsafe_allow_html=True)
+    st.markdown("""<style>
+#MainMenu {visibility:hidden;}
+footer {visibility:hidden;}
+[data-testid="stHeader"] {visibility:hidden;}
+[data-testid="stToolbar"] {visibility:hidden;}
+[data-testid="stAppViewContainer"] {
+    background-color:#04071a !important;
+    background-image:radial-gradient(ellipse 120% 70% at 60% -5%,rgba(0,48,135,0.55) 0%,transparent 65%),radial-gradient(ellipse 70% 60% at -10% 110%,rgba(212,0,110,0.3) 0%,transparent 60%),linear-gradient(rgba(255,255,255,0.028) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.028) 1px,transparent 1px) !important;
+    background-size:100% 100%,100% 100%,48px 48px,48px 48px !important;
+}
+.block-container {
+    background:#0c1628 !important;
+    border:1.5px solid rgba(77,139,255,0.2) !important;
+    border-radius:20px !important;
+    max-width:460px !important;
+    padding:2.8rem 2.6rem 2.2rem !important;
+    box-shadow:0 28px 80px rgba(0,0,0,0.55) !important;
+    margin-top:5vh !important;
+}
+.stButton > button {
+    border-radius:10px !important;
+    font-weight:600 !important;
+    font-size:0.9rem !important;
+    height:44px !important;
+}
+.stButton > button[kind="primary"] {
+    background:rgba(0,48,135,0.5) !important;
+    border:1.5px solid rgba(77,139,255,0.45) !important;
+    color:#7ab3ff !important;
+}
+.stButton > button[kind="secondary"] {
+    background:rgba(255,255,255,0.04) !important;
+    border:1px solid rgba(255,255,255,0.1) !important;
+    color:#8694b5 !important;
+}
+div[data-testid="stFormSubmitButton"] > button {
+    background:linear-gradient(135deg,#003087 0%,#1a52c4 100%) !important;
+    border:none !important;
+    border-radius:11px !important;
+    color:#fff !important;
+    font-weight:700 !important;
+    font-size:1rem !important;
+    height:50px !important;
+    box-shadow:0 8px 28px rgba(0,48,135,0.45) !important;
+    margin-top:0.2rem !important;
+}
+.stTextInput label {
+    color:#8694b5 !important;
+    font-size:0.79rem !important;
+    font-weight:600 !important;
+    letter-spacing:0.06em !important;
+    text-transform:uppercase !important;
+}
+.stTextInput > div > div > input {
+    background:rgba(255,255,255,0.05) !important;
+    border:1.5px solid rgba(255,255,255,0.12) !important;
+    border-radius:10px !important;
+    color:#e8edf8 !important;
+    padding:0.65rem 1rem !important;
+    font-size:0.95rem !important;
+}
+.stTextInput > div > div > input:focus {
+    border-color:#3d7eff !important;
+    box-shadow:0 0 0 3px rgba(61,126,255,0.15) !important;
+    background:rgba(61,126,255,0.06) !important;
+}
+.stTextInput > div > div > input::placeholder {color:#3a4d6a !important;}
+.stSelectbox label {
+    color:#8694b5 !important;
+    font-size:0.79rem !important;
+    font-weight:600 !important;
+    letter-spacing:0.06em !important;
+    text-transform:uppercase !important;
+}
+.stSelectbox > div > div {
+    background:rgba(255,255,255,0.05) !important;
+    border:1.5px solid rgba(255,255,255,0.12) !important;
+    border-radius:10px !important;
+    color:#e8edf8 !important;
+}
+.stCheckbox label p {color:#8694b5 !important;font-size:0.85rem !important;}
+[data-testid="stForm"] {background:transparent !important;border:none !important;padding:0 !important;}
+hr {border-color:rgba(255,255,255,0.08) !important;margin:1rem 0 !important;}
+</style>""", unsafe_allow_html=True)
 
     # ── Logo + app name ───────────────────────────────────────────────────────
     st.markdown("""
