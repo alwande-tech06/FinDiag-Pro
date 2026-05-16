@@ -120,27 +120,60 @@ for _k, _v in _defaults.items():
 # ══════════════════════════════════════════════════════════════════════════════
 if not st.session_state.authenticated and st.session_state.page == "landing":
     st.markdown("""
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700;900&family=Barlow+Condensed:wght@600;700;900&display=swap" rel="stylesheet">
     <style>
     #MainMenu, footer, [data-testid="stHeader"] { visibility: hidden; }
     [data-testid="stAppViewContainer"] {
-        background: linear-gradient(135deg, #0B1F3A 0%, #1E3A8A 60%, #1D4ED8 100%) !important;
+        background-color: #04071a !important;
+        background-image:
+            radial-gradient(ellipse 80% 60% at 50% -10%, rgba(0,48,135,0.45) 0%, transparent 70%),
+            radial-gradient(ellipse 50% 40% at 80% 80%, rgba(212,0,110,0.2) 0%, transparent 60%),
+            linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px) !important;
+        background-size: auto, auto, 50px 50px, 50px 50px !important;
+        background-position: center top, right bottom, 0 0, 0 0 !important;
     }
-    .block-container { padding-top: 0 !important; }
+    .block-container { padding-top: 0 !important; max-width: 900px; }
+    * { font-family: 'Barlow', sans-serif !important; }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50%       { opacity: 0.6; transform: scale(0.8); }
+    }
+    .stButton > button[kind="primary"], .stButton > button {
+        background: linear-gradient(135deg, #003087 0%, #1a4fad 100%) !important;
+        border: none !important;
+        box-shadow: 0 6px 24px rgba(0,48,135,0.5) !important;
+        color: #fff !important;
+        font-weight: 700 !important;
+        border-radius: 8px !important;
+        font-size: 1rem !important;
+        letter-spacing: 0.03em !important;
+        font-family: 'Barlow', sans-serif !important;
+    }
     </style>""", unsafe_allow_html=True)
 
     st.markdown("""
-    <div style="padding:4rem 2rem 1.5rem;text-align:center;">
-      <h1 style="color:#FFFFFF;font-size:3.2rem;font-weight:900;margin:0;letter-spacing:-0.03em;">
-        FinDiag Pro
+    <div style="padding:4rem 2rem 0.5rem;text-align:center;">
+      <div style="display:inline-flex;align-items:center;gap:8px;
+                  background:rgba(0,48,135,0.25);border:1px solid rgba(0,48,135,0.5);
+                  border-radius:50px;padding:6px 18px;margin-bottom:2rem;">
+        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;
+                     background:#4d8bff;animation:pulse 2s infinite;flex-shrink:0;"></span>
+        <span style="color:#7ab3ff;font-size:0.75rem;font-weight:600;letter-spacing:0.12em;
+                     font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;">
+          Live Financial Intelligence
+        </span>
+      </div>
+      <h1 style="font-family:'Barlow Condensed',sans-serif;font-size:3.6rem;font-weight:900;
+                 margin:0 0 0.5rem;letter-spacing:-0.01em;color:#e8edf8;line-height:1.08;">
+        Pick n Pay &nbsp;
+        <span style="color:#4d8bff;">Financial</span>&nbsp;
+        <span style="color:#f0198a;">Health</span>
+        System
       </h1>
-      <p style="color:#93C5FD;font-size:0.85rem;letter-spacing:0.18em;
-                text-transform:uppercase;font-weight:600;margin:10px 0 18px;">
-        AI-Enhanced Financial Health Diagnostics System
-      </p>
-      <p style="color:#CBD5E1;font-size:1rem;max-width:560px;line-height:1.7;margin:0 auto 2.5rem;">
-        Real-time financial monitoring, anomaly detection, and early warning alerts
-        to support executive decision-making at
-        <strong style="color:#E2E8F0;">Pick n Pay Stores Ltd</strong>.
+      <p style="color:#8694b5;font-size:1rem;max-width:560px;line-height:1.75;margin:0.8rem auto 2.5rem;">
+        Real-time financial monitoring, anomaly detection and early warning alerts
+        to support executive decision-making at Pick n Pay Stores Ltd.
       </p>
     </div>""", unsafe_allow_html=True)
 
@@ -152,23 +185,54 @@ if not st.session_state.authenticated and st.session_state.page == "landing":
         (c4, "📈", "Variance Monitor",  "Budget vs actual with automated alerts"),
     ]:
         col.markdown(f"""
-        <div style="background:rgba(255,255,255,0.09);border:1px solid rgba(255,255,255,0.18);
-                    border-radius:16px;padding:1.4rem 1.2rem;text-align:left;min-height:130px;">
-          <div style="font-size:1.5rem;margin-bottom:8px;">{icon}</div>
-          <div style="color:#F1F5F9;font-weight:700;font-size:0.9rem;">{title}</div>
-          <div style="color:#94A3B8;font-size:0.78rem;margin-top:4px;line-height:1.5;">{desc}</div>
+        <div style="background:#111e36;border:1px solid rgba(255,255,255,0.08);
+                    border-radius:14px;padding:1.4rem 1.2rem;text-align:left;min-height:140px;">
+          <div style="font-size:1.5rem;margin-bottom:10px;">{icon}</div>
+          <div style="color:#e8edf8;font-weight:700;font-size:0.88rem;
+                      font-family:'Barlow Condensed',sans-serif;letter-spacing:0.04em;">{title}</div>
+          <div style="color:#8694b5;font-size:0.78rem;margin-top:6px;line-height:1.55;">{desc}</div>
         </div>""", unsafe_allow_html=True)
+
+    st.markdown("""
+    <div style="display:flex;justify-content:center;gap:0;margin:2rem auto 0;max-width:680px;
+                background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);
+                border-radius:14px;overflow:hidden;">
+      <div style="flex:1;text-align:center;padding:1.2rem 0.5rem;border-right:1px solid rgba(255,255,255,0.07);">
+        <div style="color:#e8edf8;font-size:1.45rem;font-weight:900;
+                    font-family:'Barlow Condensed',sans-serif;">R114.9B</div>
+        <div style="color:#8694b5;font-size:0.68rem;text-transform:uppercase;
+                    letter-spacing:0.1em;margin-top:3px;">Revenue FY2024</div>
+      </div>
+      <div style="flex:1;text-align:center;padding:1.2rem 0.5rem;border-right:1px solid rgba(255,255,255,0.07);">
+        <div style="color:#e8edf8;font-size:1.45rem;font-weight:900;
+                    font-family:'Barlow Condensed',sans-serif;">5</div>
+        <div style="color:#8694b5;font-size:0.68rem;text-transform:uppercase;
+                    letter-spacing:0.1em;margin-top:3px;">Modules</div>
+      </div>
+      <div style="flex:1;text-align:center;padding:1.2rem 0.5rem;border-right:1px solid rgba(255,255,255,0.07);">
+        <div style="color:#e8edf8;font-size:1.45rem;font-weight:900;
+                    font-family:'Barlow Condensed',sans-serif;">3</div>
+        <div style="color:#8694b5;font-size:0.68rem;text-transform:uppercase;
+                    letter-spacing:0.1em;margin-top:3px;">User Roles</div>
+      </div>
+      <div style="flex:1;text-align:center;padding:1.2rem 0.5rem;">
+        <div style="color:#00c896;font-size:1.45rem;font-weight:900;
+                    font-family:'Barlow Condensed',sans-serif;">Live</div>
+        <div style="color:#8694b5;font-size:0.68rem;text-transform:uppercase;
+                    letter-spacing:0.1em;margin-top:3px;">Real-Time</div>
+      </div>
+    </div>""", unsafe_allow_html=True)
 
     st.markdown("<div style='height:2rem'></div>", unsafe_allow_html=True)
     _, mid, _ = st.columns([2, 1, 2])
     with mid:
-        if st.button("Sign In  →", use_container_width=True, type="primary"):
+        if st.button("Get Started →", use_container_width=True, type="primary"):
             st.session_state.page = "login"
             st.rerun()
 
     st.markdown("""
-    <div style="text-align:center;padding:2rem 0 1rem;">
-      <p style="color:#475569;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;">
+    <div style="text-align:center;padding:1.8rem 0 1rem;">
+      <p style="color:#3d4f6e;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;">
         Durban University of Technology &nbsp;|&nbsp; Managerial Finance PBL &nbsp;|&nbsp; Pathway B
       </p>
     </div>""", unsafe_allow_html=True)
@@ -179,25 +243,84 @@ if not st.session_state.authenticated and st.session_state.page == "landing":
 # ══════════════════════════════════════════════════════════════════════════════
 if not st.session_state.authenticated and st.session_state.page == "login":
     st.markdown("""
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700;900&family=Barlow+Condensed:wght@600;700;900&display=swap" rel="stylesheet">
     <style>
-    #MainMenu, footer { visibility: hidden; }
-    [data-testid="stHeader"] { background: transparent; }
-    [data-testid="stAppViewContainer"] { background: #EDF2F7 !important; }
-    .block-container { padding-top: 2rem !important; }
+    #MainMenu, footer, [data-testid="stHeader"] { visibility: hidden; }
+    [data-testid="stAppViewContainer"] {
+        background-color: #04071a !important;
+        background-image:
+            radial-gradient(ellipse 80% 60% at 50% -10%, rgba(0,48,135,0.45) 0%, transparent 70%),
+            radial-gradient(ellipse 50% 40% at 80% 80%, rgba(212,0,110,0.2) 0%, transparent 60%),
+            linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px) !important;
+        background-size: auto, auto, 50px 50px, 50px 50px !important;
+        background-position: center top, right bottom, 0 0, 0 0 !important;
+    }
+    .block-container { padding-top: 2.5rem !important; }
+    * { font-family: 'Barlow', sans-serif !important; }
+    .stTextInput input {
+        background: #0d1526 !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+        color: #e8edf8 !important;
+        border-radius: 8px !important;
+        font-family: 'Barlow', sans-serif !important;
+    }
+    .stTextInput input::placeholder { color: #4a5a7a !important; }
+    .stTextInput label { color: #8694b5 !important; font-size: 0.85rem !important; }
+    .stForm { background: transparent !important; border: none !important; }
+    div[data-testid="stFormSubmitButton"] > button {
+        background: linear-gradient(135deg, #003087 0%, #1a4fad 100%) !important;
+        border: none !important;
+        box-shadow: 0 6px 24px rgba(0,48,135,0.5) !important;
+        color: #fff !important;
+        font-weight: 700 !important;
+        border-radius: 8px !important;
+        font-size: 1rem !important;
+        letter-spacing: 0.03em !important;
+    }
     </style>""", unsafe_allow_html=True)
 
-    _, col, _ = st.columns([1, 1.1, 1])
+    _, col, _ = st.columns([1, 1.15, 1])
     with col:
         st.markdown("""
-        <div style="text-align:center;margin-bottom:1.5rem;">
-          <h2 style="color:#0B1F3A;font-size:1.8rem;font-weight:800;margin:0;">FinDiag Pro</h2>
-          <p style="color:#64748B;font-size:0.85rem;margin:6px 0 0;">Sign in to your account</p>
+        <div style="background:#111e36;border:1px solid rgba(255,255,255,0.08);
+                    border-radius:20px;padding:2.2rem 2rem 1.8rem;text-align:center;
+                    margin-bottom:1rem;">
+          <div style="display:inline-flex;align-items:center;justify-content:center;
+                      width:72px;height:72px;border-radius:18px;
+                      background:linear-gradient(135deg,#003087,#d4006e);
+                      font-family:'Barlow Condensed',sans-serif;
+                      font-size:1.6rem;font-weight:900;color:#fff;margin-bottom:1rem;">
+            PnP
+          </div>
+          <div style="color:#8694b5;font-size:0.72rem;letter-spacing:0.15em;
+                      text-transform:uppercase;font-weight:600;margin-bottom:0.4rem;">
+            Financial Health System
+          </div>
+          <h2 style="color:#e8edf8;font-size:1.55rem;font-weight:800;margin:0 0 1.5rem;
+                     font-family:'Barlow Condensed',sans-serif;">
+            Sign In to Your Portal
+          </h2>
+        </div>""", unsafe_allow_html=True)
+
+        st.markdown("""
+        <div style="background:rgba(0,48,135,0.15);border:1px solid rgba(0,48,135,0.35);
+                    border-radius:10px;padding:0.9rem 1rem;margin-bottom:1rem;font-size:0.78rem;">
+          <div style="color:#7ab3ff;font-weight:700;margin-bottom:6px;
+                      font-family:'Barlow Condensed',sans-serif;letter-spacing:0.06em;">
+            DEMO CREDENTIALS
+          </div>
+          <div style="color:#8694b5;line-height:1.8;">
+            Admin &nbsp;&mdash;&nbsp; admin@findiag.com &nbsp;/&nbsp; Admin@123<br>
+            Analyst &mdash; analyst@findiag.com / Analyst@123<br>
+            Viewer &nbsp;&mdash;&nbsp; viewer@findiag.com &nbsp;/&nbsp; Viewer@123
+          </div>
         </div>""", unsafe_allow_html=True)
 
         with st.form("login_form"):
-            email    = st.text_input("Email Address", placeholder="you@example.com")
+            email    = st.text_input("Email Address", placeholder="you@findiag.com")
             password = st.text_input("Password", type="password", placeholder="••••••••")
-            submitted = st.form_submit_button("Sign In", use_container_width=True, type="primary")
+            submitted = st.form_submit_button("Sign In", use_container_width=True)
 
         if submitted:
             if not email or not password:
@@ -214,20 +337,17 @@ if not st.session_state.authenticated and st.session_state.page == "login":
                 else:
                     st.error("Invalid email or password.")
 
-        st.markdown("""
-        <div style="text-align:center;margin-top:0.5rem;">
-          <p style="color:#94A3B8;font-size:0.75rem;">
-            Forgot password? Contact your system administrator.
-          </p>
-          <hr style="border-color:#E2E8F0;margin:0.8rem 0;">
-          <p style="color:#94A3B8;font-size:0.7rem;">
-            Durban University of Technology &nbsp;&middot;&nbsp; FinDiag Pro v2.0
-          </p>
-        </div>""", unsafe_allow_html=True)
-
+        st.markdown("<div style='height:0.4rem'></div>", unsafe_allow_html=True)
         if st.button("← Back to Home", use_container_width=True):
             st.session_state.page = "landing"
             st.rerun()
+
+        st.markdown("""
+        <div style="text-align:center;margin-top:1.2rem;">
+          <p style="color:#3d4f6e;font-size:0.7rem;letter-spacing:0.08em;">
+            Durban University of Technology &nbsp;&middot;&nbsp; FinDiag Pro v2.0
+          </p>
+        </div>""", unsafe_allow_html=True)
     st.stop()
 
 # ══════════════════════════════════════════════════════════════════════════════
