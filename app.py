@@ -107,10 +107,20 @@ def load_audit() -> pd.DataFrame:
         return pd.DataFrame(columns=["timestamp", "user", "action"])
     return pd.read_csv(AUDIT_FILE)
 
+def register_user(name: str, email: str, pw: str, role: str = "Viewer") -> tuple:
+    users = load_users()
+    if any(u["email"].lower() == email.lower() for u in users):
+        return False, "An account with this email already exists."
+    users.append({"name": name, "email": email, "role": role, "password": _hash(pw)})
+    save_users(users)
+    log_action(email, f"Account registered — Role: {role}")
+    return True, "Account created successfully!"
+
 # ══════════════════════════════════════════════════════════════════════════════
 # SESSION STATE
 # ══════════════════════════════════════════════════════════════════════════════
-_defaults = {"authenticated": False, "user": None, "page": "landing", "logged_access": False}
+_defaults = {"authenticated": False, "user": None, "page": "landing",
+             "logged_access": False, "auth_tab": "login"}
 for _k, _v in _defaults.items():
     if _k not in st.session_state:
         st.session_state[_k] = _v
@@ -239,148 +249,199 @@ if not st.session_state.authenticated and st.session_state.page == "landing":
     st.stop()
 
 # ══════════════════════════════════════════════════════════════════════════════
-# LOGIN PAGE
+# LOGIN / REGISTER PAGE
 # ══════════════════════════════════════════════════════════════════════════════
 if not st.session_state.authenticated and st.session_state.page == "login":
     st.markdown("""
-    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700;900&family=Barlow+Condensed:wght@600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Barlow+Condensed:wght@700;800;900&display=swap" rel="stylesheet">
     <style>
-    #MainMenu, footer, [data-testid="stHeader"] { visibility: hidden; }
+    #MainMenu, footer, [data-testid="stHeader"], [data-testid="stToolbar"] { visibility: hidden; }
+
+    /* ── Full-page background ─────────────────────────────────── */
     [data-testid="stAppViewContainer"] {
         background-color: #04071a !important;
         background-image:
-            radial-gradient(ellipse 80% 60% at 50% -10%, rgba(0,48,135,0.45) 0%, transparent 70%),
-            radial-gradient(ellipse 50% 40% at 80% 80%, rgba(212,0,110,0.25) 0%, transparent 60%),
-            linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px) !important;
-        background-size: auto, auto, 50px 50px, 50px 50px !important;
-        background-position: center top, right bottom, 0 0, 0 0 !important;
-    }
-    .block-container { padding-top: 4vh !important; }
-    * { font-family: 'Barlow', sans-serif !important; }
-
-    /* Glass card — target the middle column's vertical block */
-    [data-testid="stColumn"]:nth-child(2) > div > [data-testid="stVerticalBlock"] {
-        background: rgba(13, 21, 38, 0.78) !important;
-        backdrop-filter: blur(28px) !important;
-        -webkit-backdrop-filter: blur(28px) !important;
-        border: 1px solid rgba(255,255,255,0.13) !important;
-        border-radius: 24px !important;
-        padding: 2.5rem 2rem 2rem !important;
-        box-shadow: 0 24px 80px rgba(0,0,0,0.5) !important;
+            radial-gradient(ellipse 120% 70% at 60% -5%,  rgba(0,48,135,0.55) 0%, transparent 65%),
+            radial-gradient(ellipse 70%  60% at -10% 110%, rgba(212,0,110,0.30) 0%, transparent 60%),
+            linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.028) 1px, transparent 1px) !important;
+        background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px !important;
     }
 
-    /* Underline-only inputs */
-    .stTextInput > div > div > input {
-        background: transparent !important;
-        border: none !important;
-        border-bottom: 1.5px solid rgba(134,148,181,0.45) !important;
-        border-radius: 0 !important;
+    /* ── Floating card (the block-container IS the card) ─────── */
+    .block-container {
+        background: #0c1628 !important;
+        border: 1px solid rgba(255,255,255,0.09) !important;
+        border-radius: 20px !important;
+        max-width: 460px !important;
+        padding: 2.8rem 2.6rem 2.2rem !important;
+        box-shadow: 0 28px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(77,139,255,0.06) !important;
+        margin-top: 5vh !important;
+    }
+    * { font-family: 'Inter', sans-serif !important; }
+
+    /* ── Tab buttons ──────────────────────────────────────────── */
+    .stButton > button {
+        border-radius: 10px !important;
+        font-weight: 600 !important;
+        font-size: 0.9rem !important;
+        height: 44px !important;
+        transition: all 0.18s ease !important;
+    }
+    /* active tab */
+    .stButton > button[kind="primary"] {
+        background: rgba(0,48,135,0.5) !important;
+        border: 1.5px solid rgba(77,139,255,0.45) !important;
+        color: #7ab3ff !important;
+        box-shadow: 0 0 0 3px rgba(77,139,255,0.1) !important;
+    }
+    /* inactive tab + back button */
+    .stButton > button[kind="secondary"] {
+        background: rgba(255,255,255,0.04) !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+        color: #8694b5 !important;
+    }
+    .stButton > button[kind="secondary"]:hover {
+        background: rgba(255,255,255,0.08) !important;
         color: #e8edf8 !important;
-        padding: 0.55rem 0.2rem !important;
+    }
+
+    /* ── Form submit buttons ──────────────────────────────────── */
+    div[data-testid="stFormSubmitButton"] > button {
+        background: linear-gradient(135deg, #003087 0%, #1a52c4 100%) !important;
+        border: none !important;
+        border-radius: 11px !important;
+        color: #fff !important;
+        font-weight: 700 !important;
         font-size: 1rem !important;
-        box-shadow: none !important;
-        font-family: 'Barlow', sans-serif !important;
+        height: 50px !important;
+        box-shadow: 0 8px 28px rgba(0,48,135,0.45) !important;
+        letter-spacing: 0.02em !important;
+        margin-top: 0.2rem !important;
     }
-    .stTextInput > div > div > input:focus {
-        border-bottom-color: #4d8bff !important;
-        box-shadow: none !important;
-        outline: none !important;
+    div[data-testid="stFormSubmitButton"] > button:hover {
+        box-shadow: 0 12px 36px rgba(0,48,135,0.65) !important;
+        filter: brightness(1.08) !important;
     }
-    .stTextInput > div > div > input::placeholder { color: #3d4f6e !important; }
+
+    /* ── Inputs ───────────────────────────────────────────────── */
     .stTextInput label {
         color: #8694b5 !important;
-        font-size: 0.82rem !important;
+        font-size: 0.79rem !important;
         font-weight: 600 !important;
         letter-spacing: 0.06em !important;
         text-transform: uppercase !important;
     }
+    .stTextInput > div > div > input {
+        background: rgba(255,255,255,0.05) !important;
+        border: 1.5px solid rgba(255,255,255,0.1) !important;
+        border-radius: 10px !important;
+        color: #e8edf8 !important;
+        padding: 0.65rem 1rem !important;
+        font-size: 0.95rem !important;
+        caret-color: #4d8bff !important;
+    }
+    .stTextInput > div > div > input:focus {
+        border-color: #3d7eff !important;
+        box-shadow: 0 0 0 3px rgba(61,126,255,0.15) !important;
+        background: rgba(61,126,255,0.06) !important;
+    }
+    .stTextInput > div > div > input::placeholder { color: #3a4d6a !important; }
 
-    /* Remove form container styling */
-    .stForm, [data-testid="stForm"] {
+    /* ── Selectbox ────────────────────────────────────────────── */
+    .stSelectbox label {
+        color: #8694b5 !important;
+        font-size: 0.79rem !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.06em !important;
+        text-transform: uppercase !important;
+    }
+    .stSelectbox > div > div {
+        background: rgba(255,255,255,0.05) !important;
+        border: 1.5px solid rgba(255,255,255,0.1) !important;
+        border-radius: 10px !important;
+        color: #e8edf8 !important;
+    }
+
+    /* ── Checkbox ─────────────────────────────────────────────── */
+    .stCheckbox label p { color: #8694b5 !important; font-size: 0.85rem !important; }
+
+    /* ── Form container ───────────────────────────────────────── */
+    [data-testid="stForm"] {
         background: transparent !important;
         border: none !important;
         padding: 0 !important;
     }
 
-    /* Pill Login button */
-    div[data-testid="stFormSubmitButton"] > button {
-        background: linear-gradient(135deg, #003087 0%, #6b2fa0 100%) !important;
-        border: none !important;
-        box-shadow: 0 8px 32px rgba(0,48,135,0.55) !important;
-        color: #fff !important;
-        font-weight: 800 !important;
-        border-radius: 50px !important;
-        font-size: 1.05rem !important;
-        letter-spacing: 0.06em !important;
-        height: 52px !important;
-        margin-top: 0.5rem !important;
-    }
-    div[data-testid="stFormSubmitButton"] > button:hover {
-        box-shadow: 0 12px 40px rgba(0,48,135,0.7) !important;
-        transform: translateY(-1px) !important;
-    }
-
-    /* Checkbox */
-    .stCheckbox label p { color: #8694b5 !important; font-size: 0.84rem !important; }
-    .stCheckbox [data-testid="stCheckbox"] svg { stroke: #4d8bff !important; }
-
-    /* Back button — ghost link style */
-    .stButton > button {
-        background: transparent !important;
-        border: none !important;
-        color: #8694b5 !important;
-        font-size: 0.82rem !important;
-        text-decoration: none !important;
-        padding: 0.3rem 0 !important;
-    }
-    .stButton > button:hover { color: #e8edf8 !important; }
+    /* ── Divider ──────────────────────────────────────────────── */
+    hr { border-color: rgba(255,255,255,0.07) !important; margin: 1rem 0 !important; }
     </style>""", unsafe_allow_html=True)
 
-    _, col, _ = st.columns([1, 1.1, 1])
-    with col:
-        # Logo + heading
+    # ── Logo + app name ───────────────────────────────────────────────────────
+    st.markdown("""
+    <div style="text-align:center; margin-bottom:1.6rem;">
+      <div style="display:inline-flex;align-items:center;justify-content:center;
+                  width:60px;height:60px;border-radius:16px;
+                  background:linear-gradient(135deg,#003087 0%,#d4006e 100%);
+                  font-family:'Barlow Condensed',sans-serif;font-size:1.35rem;
+                  font-weight:900;color:#fff;margin-bottom:0.9rem;
+                  box-shadow:0 6px 24px rgba(212,0,110,0.38);">
+        PnP
+      </div>
+      <div style="color:#e8edf8;font-family:'Barlow Condensed',sans-serif;
+                  font-size:1.55rem;font-weight:900;letter-spacing:-0.01em;">
+        FinDiag Pro
+      </div>
+      <div style="color:#8694b5;font-size:0.8rem;margin-top:3px;">
+        Pick n Pay &middot; Financial Health System
+      </div>
+    </div>""", unsafe_allow_html=True)
+
+    # ── Tab switcher ──────────────────────────────────────────────────────────
+    tc1, tc2 = st.columns(2)
+    with tc1:
+        if st.button("Sign In", use_container_width=True,
+                     type="primary" if st.session_state.auth_tab == "login" else "secondary",
+                     key="tab_signin"):
+            st.session_state.auth_tab = "login"
+            st.rerun()
+    with tc2:
+        if st.button("Register", use_container_width=True,
+                     type="primary" if st.session_state.auth_tab == "register" else "secondary",
+                     key="tab_register"):
+            st.session_state.auth_tab = "register"
+            st.rerun()
+
+    st.markdown("<hr>", unsafe_allow_html=True)
+
+    # ══ SIGN IN FORM ══════════════════════════════════════════════════════════
+    if st.session_state.auth_tab == "login":
         st.markdown("""
-        <div style="text-align:center;margin-bottom:1.8rem;">
-          <div style="display:inline-flex;align-items:center;justify-content:center;
-                      width:68px;height:68px;border-radius:18px;
-                      background:linear-gradient(135deg,#003087 0%,#d4006e 100%);
-                      font-family:'Barlow Condensed',sans-serif;
-                      font-size:1.5rem;font-weight:900;color:#fff;
-                      margin-bottom:1.1rem;box-shadow:0 8px 28px rgba(212,0,110,0.4);">
-            PnP
+        <div style="margin-bottom:1.1rem;">
+          <div style="color:#e8edf8;font-size:1.3rem;font-weight:700;">Welcome back</div>
+          <div style="color:#8694b5;font-size:0.83rem;margin-top:3px;">
+            Enter your credentials to access your account
           </div>
-          <h2 style="color:#e8edf8;font-size:2.1rem;font-weight:900;margin:0;
-                     font-family:'Barlow Condensed',sans-serif;letter-spacing:-0.01em;">
-            Login
-          </h2>
-          <p style="color:#8694b5;font-size:0.85rem;margin:6px 0 0;font-weight:400;">
-            Sign in to your portal
-          </p>
         </div>""", unsafe_allow_html=True)
 
         with st.form("login_form"):
-            email    = st.text_input("Email", placeholder="your@email.com")
-            password = st.text_input("Password", type="password", placeholder="••••••••")
-
-            # Remember me + Forgot Password row
-            rc1, rc2 = st.columns([1.1, 1])
+            li_email = st.text_input("Email address", placeholder="you@findiag.com")
+            li_pw    = st.text_input("Password", type="password", placeholder="Enter your password")
+            rc1, rc2 = st.columns([1.2, 1])
             with rc1:
-                st.checkbox("Remember me", value=False)
+                st.checkbox("Remember me")
             with rc2:
-                st.markdown("""
-                <div style="text-align:right;padding-top:0.3rem;">
-                  <span style="color:#7ab3ff;font-size:0.82rem;cursor:pointer;
-                               font-weight:600;">Forgot Password?</span>
+                st.markdown("""<div style="text-align:right;padding-top:7px;">
+                  <span style="color:#6ea8ff;font-size:0.81rem;font-weight:600;
+                               cursor:pointer;">Forgot password?</span>
                 </div>""", unsafe_allow_html=True)
+            li_submit = st.form_submit_button("Sign In", use_container_width=True)
 
-            submitted = st.form_submit_button("Login", use_container_width=True)
-
-        if submitted:
-            if not email or not password:
+        if li_submit:
+            if not li_email or not li_pw:
                 st.error("Please enter both email and password.")
             else:
-                user = authenticate(email, password)
+                user = authenticate(li_email, li_pw)
                 if user:
                     st.session_state.authenticated = True
                     st.session_state.user = user
@@ -389,43 +450,83 @@ if not st.session_state.authenticated and st.session_state.page == "login":
                     log_action(user["email"], f"Login — Role: {user['role']}")
                     st.rerun()
                 else:
-                    st.error("Invalid email or password.")
+                    st.error("Incorrect email or password. Please try again.")
 
-        # Demo credentials hint
         st.markdown("""
-        <div style="background:rgba(0,48,135,0.18);border:1px solid rgba(77,139,255,0.25);
-                    border-radius:10px;padding:0.85rem 1rem;margin-top:0.8rem;font-size:0.77rem;">
-          <div style="color:#7ab3ff;font-weight:700;margin-bottom:5px;
-                      font-family:'Barlow Condensed',sans-serif;letter-spacing:0.07em;">
-            DEMO CREDENTIALS
-          </div>
-          <div style="color:#8694b5;line-height:1.85;">
-            admin@findiag.com &nbsp;/&nbsp; Admin@123<br>
-            analyst@findiag.com &nbsp;/&nbsp; Analyst@123<br>
-            viewer@findiag.com &nbsp;/&nbsp; Viewer@123
+        <div style="background:rgba(0,48,135,0.14);border:1px solid rgba(61,126,255,0.22);
+                    border-radius:10px;padding:0.8rem 1rem;margin-top:1rem;">
+          <div style="color:#6ea8ff;font-size:0.75rem;font-weight:700;letter-spacing:0.08em;
+                      text-transform:uppercase;margin-bottom:6px;">Demo Credentials</div>
+          <div style="color:#8694b5;font-size:0.79rem;line-height:1.9;">
+            <b style="color:#a8c4ff;">Admin</b> &nbsp;&mdash; admin@findiag.com / Admin@123<br>
+            <b style="color:#a8c4ff;">Analyst</b> &mdash; analyst@findiag.com / Analyst@123<br>
+            <b style="color:#a8c4ff;">Viewer</b> &nbsp;&mdash; viewer@findiag.com / Viewer@123
           </div>
         </div>""", unsafe_allow_html=True)
 
-        # Don't have an account row
         st.markdown("""
-        <div style="text-align:center;margin-top:1.2rem;">
-          <span style="color:#8694b5;font-size:0.83rem;">Don't have an account? </span>
-          <span style="color:#7ab3ff;font-size:0.83rem;font-weight:700;cursor:pointer;">
-            Contact Admin
-          </span>
+        <div style="text-align:center;margin-top:1.1rem;font-size:0.83rem;">
+          <span style="color:#8694b5;">Don't have an account?&nbsp;</span>
         </div>""", unsafe_allow_html=True)
 
-        st.markdown("<div style='height:0.3rem'></div>", unsafe_allow_html=True)
-        if st.button("← Back to Home", use_container_width=True):
-            st.session_state.page = "landing"
-            st.rerun()
+    # ══ REGISTER FORM ═════════════════════════════════════════════════════════
+    else:
+        st.markdown("""
+        <div style="margin-bottom:1.1rem;">
+          <div style="color:#e8edf8;font-size:1.3rem;font-weight:700;">Create an account</div>
+          <div style="color:#8694b5;font-size:0.83rem;margin-top:3px;">
+            Fill in the details below to get started
+          </div>
+        </div>""", unsafe_allow_html=True)
+
+        with st.form("register_form"):
+            rg_name  = st.text_input("Full Name", placeholder="e.g. Jane Smith")
+            rg_email = st.text_input("Email Address", placeholder="you@company.com")
+            rg_role  = st.selectbox("Access Level",
+                                    ["Viewer — read dashboards",
+                                     "Analyst — full analysis tools"])
+            rg_pw    = st.text_input("Password", type="password",
+                                     placeholder="At least 6 characters")
+            rg_pw2   = st.text_input("Confirm Password", type="password",
+                                     placeholder="Repeat password")
+            rg_submit = st.form_submit_button("Create Account", use_container_width=True)
+
+        if rg_submit:
+            role_map = {"Viewer — read dashboards": "Viewer",
+                        "Analyst — full analysis tools": "Analyst"}
+            chosen_role = role_map.get(rg_role, "Viewer")
+            if not all([rg_name.strip(), rg_email.strip(), rg_pw, rg_pw2]):
+                st.error("Please fill in all fields.")
+            elif len(rg_pw) < 6:
+                st.error("Password must be at least 6 characters.")
+            elif rg_pw != rg_pw2:
+                st.error("Passwords do not match.")
+            else:
+                ok, msg = register_user(rg_name.strip(), rg_email.strip(),
+                                        rg_pw, chosen_role)
+                if ok:
+                    st.success(f"{msg} Please sign in to continue.")
+                    st.session_state.auth_tab = "login"
+                    st.rerun()
+                else:
+                    st.error(msg)
 
         st.markdown("""
-        <div style="text-align:center;margin-top:0.8rem;">
-          <p style="color:#2a3a56;font-size:0.68rem;letter-spacing:0.08em;">
-            Durban University of Technology &nbsp;&middot;&nbsp; FinDiag Pro v2.0
-          </p>
+        <div style="text-align:center;margin-top:1.1rem;font-size:0.83rem;">
+          <span style="color:#8694b5;">Already have an account?&nbsp;</span>
         </div>""", unsafe_allow_html=True)
+
+    # ── Footer row ────────────────────────────────────────────────────────────
+    st.markdown("<div style='height:0.2rem'></div>", unsafe_allow_html=True)
+    if st.button("← Back to Home", use_container_width=True, type="secondary"):
+        st.session_state.page = "landing"
+        st.rerun()
+    st.markdown("""
+    <div style="text-align:center;margin-top:0.9rem;">
+      <span style="color:#243350;font-size:0.67rem;letter-spacing:0.07em;">
+        Durban University of Technology &nbsp;&middot;&nbsp; FinDiag Pro v2.0
+      </span>
+    </div>""", unsafe_allow_html=True)
     st.stop()
 
 # ══════════════════════════════════════════════════════════════════════════════
