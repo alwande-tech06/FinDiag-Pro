@@ -736,10 +736,14 @@ st.markdown("""<style>
 [data-testid="stSidebar"] .stCaption p {color:rgba(255,255,255,0.55) !important;}
 [data-testid="stSidebar"] hr {border-color:rgba(255,255,255,0.15) !important;}
 [data-testid="stSidebar"] .stTextInput > div > div > input {
-    background:rgba(255,255,255,0.12) !important;
-    border:1px solid rgba(255,255,255,0.2) !important;
-    color:#ffffff !important;
+    background:#ffffff !important;
+    border:1.5px solid rgba(255,255,255,0.4) !important;
+    color:#1a2744 !important;
     border-radius:8px !important;
+    font-weight:500 !important;
+}
+[data-testid="stSidebar"] .stTextInput > div > div > input::placeholder {
+    color:#94a3b8 !important;
 }
 [data-testid="stSidebar"] .stSelectbox > div > div {
     background:rgba(255,255,255,0.12) !important;
@@ -759,6 +763,16 @@ st.markdown("""<style>
     border:1px solid rgba(255,255,255,0.25) !important;
     color:#ffffff !important;
     border-radius:8px !important;
+}
+[data-testid="stSidebar"] [data-testid="stFileUploader"] button {
+    background:#ffffff !important;
+    border:none !important;
+    color:#003087 !important;
+    font-weight:700 !important;
+    border-radius:8px !important;
+}
+[data-testid="stSidebar"] [data-testid="stFileUploader"] small {
+    color:rgba(255,255,255,0.6) !important;
 }
 .stTabs [data-testid="stTab"] {
     background:transparent !important;
