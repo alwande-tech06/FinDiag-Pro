@@ -250,77 +250,131 @@ if not st.session_state.authenticated and st.session_state.page == "login":
         background-color: #04071a !important;
         background-image:
             radial-gradient(ellipse 80% 60% at 50% -10%, rgba(0,48,135,0.45) 0%, transparent 70%),
-            radial-gradient(ellipse 50% 40% at 80% 80%, rgba(212,0,110,0.2) 0%, transparent 60%),
+            radial-gradient(ellipse 50% 40% at 80% 80%, rgba(212,0,110,0.25) 0%, transparent 60%),
             linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
             linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px) !important;
         background-size: auto, auto, 50px 50px, 50px 50px !important;
         background-position: center top, right bottom, 0 0, 0 0 !important;
     }
-    .block-container { padding-top: 2.5rem !important; }
+    .block-container { padding-top: 4vh !important; }
     * { font-family: 'Barlow', sans-serif !important; }
-    .stTextInput input {
-        background: #0d1526 !important;
-        border: 1px solid rgba(255,255,255,0.1) !important;
+
+    /* Glass card — target the middle column's vertical block */
+    [data-testid="stColumn"]:nth-child(2) > div > [data-testid="stVerticalBlock"] {
+        background: rgba(13, 21, 38, 0.78) !important;
+        backdrop-filter: blur(28px) !important;
+        -webkit-backdrop-filter: blur(28px) !important;
+        border: 1px solid rgba(255,255,255,0.13) !important;
+        border-radius: 24px !important;
+        padding: 2.5rem 2rem 2rem !important;
+        box-shadow: 0 24px 80px rgba(0,0,0,0.5) !important;
+    }
+
+    /* Underline-only inputs */
+    .stTextInput > div > div > input {
+        background: transparent !important;
+        border: none !important;
+        border-bottom: 1.5px solid rgba(134,148,181,0.45) !important;
+        border-radius: 0 !important;
         color: #e8edf8 !important;
-        border-radius: 8px !important;
+        padding: 0.55rem 0.2rem !important;
+        font-size: 1rem !important;
+        box-shadow: none !important;
         font-family: 'Barlow', sans-serif !important;
     }
-    .stTextInput input::placeholder { color: #4a5a7a !important; }
-    .stTextInput label { color: #8694b5 !important; font-size: 0.85rem !important; }
-    .stForm { background: transparent !important; border: none !important; }
-    div[data-testid="stFormSubmitButton"] > button {
-        background: linear-gradient(135deg, #003087 0%, #1a4fad 100%) !important;
-        border: none !important;
-        box-shadow: 0 6px 24px rgba(0,48,135,0.5) !important;
-        color: #fff !important;
-        font-weight: 700 !important;
-        border-radius: 8px !important;
-        font-size: 1rem !important;
-        letter-spacing: 0.03em !important;
+    .stTextInput > div > div > input:focus {
+        border-bottom-color: #4d8bff !important;
+        box-shadow: none !important;
+        outline: none !important;
     }
+    .stTextInput > div > div > input::placeholder { color: #3d4f6e !important; }
+    .stTextInput label {
+        color: #8694b5 !important;
+        font-size: 0.82rem !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.06em !important;
+        text-transform: uppercase !important;
+    }
+
+    /* Remove form container styling */
+    .stForm, [data-testid="stForm"] {
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+    }
+
+    /* Pill Login button */
+    div[data-testid="stFormSubmitButton"] > button {
+        background: linear-gradient(135deg, #003087 0%, #6b2fa0 100%) !important;
+        border: none !important;
+        box-shadow: 0 8px 32px rgba(0,48,135,0.55) !important;
+        color: #fff !important;
+        font-weight: 800 !important;
+        border-radius: 50px !important;
+        font-size: 1.05rem !important;
+        letter-spacing: 0.06em !important;
+        height: 52px !important;
+        margin-top: 0.5rem !important;
+    }
+    div[data-testid="stFormSubmitButton"] > button:hover {
+        box-shadow: 0 12px 40px rgba(0,48,135,0.7) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    /* Checkbox */
+    .stCheckbox label p { color: #8694b5 !important; font-size: 0.84rem !important; }
+    .stCheckbox [data-testid="stCheckbox"] svg { stroke: #4d8bff !important; }
+
+    /* Back button — ghost link style */
+    .stButton > button {
+        background: transparent !important;
+        border: none !important;
+        color: #8694b5 !important;
+        font-size: 0.82rem !important;
+        text-decoration: none !important;
+        padding: 0.3rem 0 !important;
+    }
+    .stButton > button:hover { color: #e8edf8 !important; }
     </style>""", unsafe_allow_html=True)
 
-    _, col, _ = st.columns([1, 1.15, 1])
+    _, col, _ = st.columns([1, 1.1, 1])
     with col:
+        # Logo + heading
         st.markdown("""
-        <div style="background:#111e36;border:1px solid rgba(255,255,255,0.08);
-                    border-radius:20px;padding:2.2rem 2rem 1.8rem;text-align:center;
-                    margin-bottom:1rem;">
+        <div style="text-align:center;margin-bottom:1.8rem;">
           <div style="display:inline-flex;align-items:center;justify-content:center;
-                      width:72px;height:72px;border-radius:18px;
-                      background:linear-gradient(135deg,#003087,#d4006e);
+                      width:68px;height:68px;border-radius:18px;
+                      background:linear-gradient(135deg,#003087 0%,#d4006e 100%);
                       font-family:'Barlow Condensed',sans-serif;
-                      font-size:1.6rem;font-weight:900;color:#fff;margin-bottom:1rem;">
+                      font-size:1.5rem;font-weight:900;color:#fff;
+                      margin-bottom:1.1rem;box-shadow:0 8px 28px rgba(212,0,110,0.4);">
             PnP
           </div>
-          <div style="color:#8694b5;font-size:0.72rem;letter-spacing:0.15em;
-                      text-transform:uppercase;font-weight:600;margin-bottom:0.4rem;">
-            Financial Health System
-          </div>
-          <h2 style="color:#e8edf8;font-size:1.55rem;font-weight:800;margin:0 0 1.5rem;
-                     font-family:'Barlow Condensed',sans-serif;">
-            Sign In to Your Portal
+          <h2 style="color:#e8edf8;font-size:2.1rem;font-weight:900;margin:0;
+                     font-family:'Barlow Condensed',sans-serif;letter-spacing:-0.01em;">
+            Login
           </h2>
-        </div>""", unsafe_allow_html=True)
-
-        st.markdown("""
-        <div style="background:rgba(0,48,135,0.15);border:1px solid rgba(0,48,135,0.35);
-                    border-radius:10px;padding:0.9rem 1rem;margin-bottom:1rem;font-size:0.78rem;">
-          <div style="color:#7ab3ff;font-weight:700;margin-bottom:6px;
-                      font-family:'Barlow Condensed',sans-serif;letter-spacing:0.06em;">
-            DEMO CREDENTIALS
-          </div>
-          <div style="color:#8694b5;line-height:1.8;">
-            Admin &nbsp;&mdash;&nbsp; admin@findiag.com &nbsp;/&nbsp; Admin@123<br>
-            Analyst &mdash; analyst@findiag.com / Analyst@123<br>
-            Viewer &nbsp;&mdash;&nbsp; viewer@findiag.com &nbsp;/&nbsp; Viewer@123
-          </div>
+          <p style="color:#8694b5;font-size:0.85rem;margin:6px 0 0;font-weight:400;">
+            Sign in to your portal
+          </p>
         </div>""", unsafe_allow_html=True)
 
         with st.form("login_form"):
-            email    = st.text_input("Email Address", placeholder="you@findiag.com")
+            email    = st.text_input("Email", placeholder="your@email.com")
             password = st.text_input("Password", type="password", placeholder="••••••••")
-            submitted = st.form_submit_button("Sign In", use_container_width=True)
+
+            # Remember me + Forgot Password row
+            rc1, rc2 = st.columns([1.1, 1])
+            with rc1:
+                st.checkbox("Remember me", value=False)
+            with rc2:
+                st.markdown("""
+                <div style="text-align:right;padding-top:0.3rem;">
+                  <span style="color:#7ab3ff;font-size:0.82rem;cursor:pointer;
+                               font-weight:600;">Forgot Password?</span>
+                </div>""", unsafe_allow_html=True)
+
+            submitted = st.form_submit_button("Login", use_container_width=True)
 
         if submitted:
             if not email or not password:
@@ -337,14 +391,38 @@ if not st.session_state.authenticated and st.session_state.page == "login":
                 else:
                     st.error("Invalid email or password.")
 
-        st.markdown("<div style='height:0.4rem'></div>", unsafe_allow_html=True)
+        # Demo credentials hint
+        st.markdown("""
+        <div style="background:rgba(0,48,135,0.18);border:1px solid rgba(77,139,255,0.25);
+                    border-radius:10px;padding:0.85rem 1rem;margin-top:0.8rem;font-size:0.77rem;">
+          <div style="color:#7ab3ff;font-weight:700;margin-bottom:5px;
+                      font-family:'Barlow Condensed',sans-serif;letter-spacing:0.07em;">
+            DEMO CREDENTIALS
+          </div>
+          <div style="color:#8694b5;line-height:1.85;">
+            admin@findiag.com &nbsp;/&nbsp; Admin@123<br>
+            analyst@findiag.com &nbsp;/&nbsp; Analyst@123<br>
+            viewer@findiag.com &nbsp;/&nbsp; Viewer@123
+          </div>
+        </div>""", unsafe_allow_html=True)
+
+        # Don't have an account row
+        st.markdown("""
+        <div style="text-align:center;margin-top:1.2rem;">
+          <span style="color:#8694b5;font-size:0.83rem;">Don't have an account? </span>
+          <span style="color:#7ab3ff;font-size:0.83rem;font-weight:700;cursor:pointer;">
+            Contact Admin
+          </span>
+        </div>""", unsafe_allow_html=True)
+
+        st.markdown("<div style='height:0.3rem'></div>", unsafe_allow_html=True)
         if st.button("← Back to Home", use_container_width=True):
             st.session_state.page = "landing"
             st.rerun()
 
         st.markdown("""
-        <div style="text-align:center;margin-top:1.2rem;">
-          <p style="color:#3d4f6e;font-size:0.7rem;letter-spacing:0.08em;">
+        <div style="text-align:center;margin-top:0.8rem;">
+          <p style="color:#2a3a56;font-size:0.68rem;letter-spacing:0.08em;">
             Durban University of Technology &nbsp;&middot;&nbsp; FinDiag Pro v2.0
           </p>
         </div>""", unsafe_allow_html=True)
