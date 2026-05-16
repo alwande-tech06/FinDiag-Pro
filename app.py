@@ -25,26 +25,26 @@ warnings.filterwarnings("ignore")
 # ── Global Plotly theme ───────────────────────────────────────────────────────
 _t = go.layout.Template()
 _t.layout = go.Layout(
-    paper_bgcolor="#FFFFFF",
-    plot_bgcolor="#F8FAFC",
-    font=dict(family="Inter, system-ui, sans-serif", color="#334155", size=11),
-    title=dict(font=dict(size=13, color="#0B1F3A"), x=0.01),
-    xaxis=dict(gridcolor="#EDF2F7", linecolor="#E2E8F0", tickcolor="#CBD5E1",
-               showgrid=True, zeroline=False),
-    yaxis=dict(gridcolor="#EDF2F7", linecolor="#E2E8F0", tickcolor="#CBD5E1",
-               showgrid=True, zeroline=False),
-    legend=dict(bgcolor="rgba(255,255,255,0.95)", bordercolor="#E2E8F0",
-                borderwidth=1, font=dict(size=11)),
-    colorway=["#1D4ED8","#0D9488","#DC2626","#D97706","#4F46E5","#64748B"],
+    paper_bgcolor="#111e36",
+    plot_bgcolor="#0d1526",
+    font=dict(family="Inter, system-ui, sans-serif", color="#c8d6f0", size=11),
+    title=dict(font=dict(size=13, color="#e8edf8"), x=0.01),
+    xaxis=dict(gridcolor="rgba(255,255,255,0.06)", linecolor="rgba(255,255,255,0.1)",
+               tickcolor="#8694b5", showgrid=True, zeroline=False, color="#8694b5"),
+    yaxis=dict(gridcolor="rgba(255,255,255,0.06)", linecolor="rgba(255,255,255,0.1)",
+               tickcolor="#8694b5", showgrid=True, zeroline=False, color="#8694b5"),
+    legend=dict(bgcolor="rgba(13,21,38,0.9)", bordercolor="rgba(255,255,255,0.1)",
+                borderwidth=1, font=dict(size=11, color="#c8d6f0")),
+    colorway=["#003087","#e31837","#0D9488","#D97706","#6366f1","#64748B"],
 )
 pio.templates["findiag"] = _t
 pio.templates.default   = "plotly+findiag"
 
-C_BLUE   = "#1D4ED8"
+C_BLUE   = "#003087"
 C_TEAL   = "#0D9488"
-C_RED    = "#DC2626"
+C_RED    = "#e31837"
 C_AMBER  = "#D97706"
-C_INDIGO = "#4F46E5"
+C_INDIGO = "#6366f1"
 C_SLATE  = "#64748B"
 
 # ── Page config — must be first Streamlit call ────────────────────────────────
@@ -137,7 +137,7 @@ if not st.session_state.authenticated and st.session_state.page == "landing":
         background-color: #04071a !important;
         background-image:
             radial-gradient(ellipse 80% 60% at 50% -10%, rgba(0,48,135,0.45) 0%, transparent 70%),
-            radial-gradient(ellipse 50% 40% at 80% 80%, rgba(212,0,110,0.2) 0%, transparent 60%),
+            radial-gradient(ellipse 50% 40% at 80% 80%, rgba(227,24,55,0.2) 0%, transparent 60%),
             linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
             linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px) !important;
         background-size: auto, auto, 50px 50px, 50px 50px !important;
@@ -150,7 +150,7 @@ if not st.session_state.authenticated and st.session_state.page == "landing":
         50%       { opacity: 0.6; transform: scale(0.8); }
     }
     .stButton > button[kind="primary"], .stButton > button {
-        background: linear-gradient(135deg, #003087 0%, #1a4fad 100%) !important;
+        background: linear-gradient(135deg, #003087 0%, #003087 100%) !important;
         border: none !important;
         box-shadow: 0 6px 24px rgba(0,48,135,0.5) !important;
         color: #fff !important;
@@ -178,7 +178,7 @@ if not st.session_state.authenticated and st.session_state.page == "landing":
                  margin:0 0 0.5rem;letter-spacing:-0.01em;color:#e8edf8;line-height:1.08;">
         Pick n Pay &nbsp;
         <span style="color:#4d8bff;">Financial</span>&nbsp;
-        <span style="color:#f0198a;">Health</span>
+        <span style="color:#e31837;">Health</span>
         System
       </h1>
       <p style="color:#8694b5;font-size:1rem;max-width:560px;line-height:1.75;margin:0.8rem auto 2.5rem;">
@@ -260,7 +260,7 @@ footer {visibility:hidden;}
 [data-testid="stToolbar"] {visibility:hidden;}
 [data-testid="stAppViewContainer"] {
     background-color:#04071a !important;
-    background-image:radial-gradient(ellipse 120% 70% at 60% -5%,rgba(0,48,135,0.55) 0%,transparent 65%),radial-gradient(ellipse 70% 60% at -10% 110%,rgba(212,0,110,0.3) 0%,transparent 60%),linear-gradient(rgba(255,255,255,0.028) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.028) 1px,transparent 1px) !important;
+    background-image:radial-gradient(ellipse 120% 70% at 60% -5%,rgba(0,48,135,0.55) 0%,transparent 65%),radial-gradient(ellipse 70% 60% at -10% 110%,rgba(227,24,55,0.3) 0%,transparent 60%),linear-gradient(rgba(255,255,255,0.028) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.028) 1px,transparent 1px) !important;
     background-size:100% 100%,100% 100%,48px 48px,48px 48px !important;
 }
 .block-container {
@@ -289,7 +289,7 @@ footer {visibility:hidden;}
     color:#8694b5 !important;
 }
 div[data-testid="stFormSubmitButton"] > button {
-    background:linear-gradient(135deg,#003087 0%,#1a52c4 100%) !important;
+    background:linear-gradient(135deg,#003087 0%,#003087 100%) !important;
     border:none !important;
     border-radius:11px !important;
     color:#fff !important;
@@ -343,10 +343,10 @@ hr {border-color:rgba(255,255,255,0.08) !important;margin:1rem 0 !important;}
     <div style="text-align:center; margin-bottom:1.6rem;">
       <div style="display:inline-flex;align-items:center;justify-content:center;
                   width:60px;height:60px;border-radius:16px;
-                  background:linear-gradient(135deg,#003087 0%,#d4006e 100%);
+                  background:linear-gradient(135deg,#003087 0%,#e31837 100%);
                   font-family:'Barlow Condensed',sans-serif;font-size:1.35rem;
                   font-weight:900;color:#fff;margin-bottom:0.9rem;
-                  box-shadow:0 6px 24px rgba(212,0,110,0.38);">
+                  box-shadow:0 6px 24px rgba(227,24,55,0.38);">
         PnP
       </div>
       <div style="color:#e8edf8;font-family:'Barlow Condensed',sans-serif;
@@ -717,7 +717,7 @@ if not st.session_state.logged_access:
 st.markdown("""<style>
 [data-testid="stAppViewContainer"] {
     background-color:#04071a !important;
-    background-image:radial-gradient(ellipse 90% 50% at 50% 0%,rgba(0,48,135,0.4) 0%,transparent 65%),radial-gradient(ellipse 50% 40% at 100% 100%,rgba(212,0,110,0.15) 0%,transparent 60%),linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px) !important;
+    background-image:radial-gradient(ellipse 90% 50% at 50% 0%,rgba(0,48,135,0.4) 0%,transparent 65%),radial-gradient(ellipse 50% 40% at 100% 100%,rgba(227,24,55,0.15) 0%,transparent 60%),linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px) !important;
     background-size:100% 100%,100% 100%,48px 48px,48px 48px !important;
 }
 [data-testid="stSidebar"] {
@@ -784,7 +784,7 @@ p {color:#c8d6f0 !important;}
 
 # ── Header ────────────────────────────────────────────────────────────────────
 st.markdown(f"""
-<div style="background:linear-gradient(135deg,#003087 0%,#0a1e46 60%,#111e36 100%);
+<div style="background:linear-gradient(135deg,#003087 0%,#001a5c 60%,#111e36 100%);
      border-radius:16px;padding:1.4rem 2rem;margin-bottom:1rem;
      border:1px solid rgba(77,139,255,0.15);
      box-shadow:0 4px 24px rgba(0,0,0,0.45);">
@@ -888,7 +888,7 @@ def render_health_scorecard():
         st.plotly_chart(fig_radar, use_container_width=True)
 
         for lbl, val in zip(labels, vals):
-            bar_col  = "#16A34A" if val >= 70 else "#D97706" if val >= 50 else "#DC2626"
+            bar_col  = "#16A34A" if val >= 70 else "#D97706" if val >= 50 else "#e31837"
             text_col = "#15803D" if val >= 70 else "#92400E" if val >= 50 else "#991B1B"
             st.markdown(f"""
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;">
