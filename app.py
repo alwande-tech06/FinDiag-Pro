@@ -416,17 +416,9 @@ if not st.session_state.authenticated and st.session_state.page == "login":
 
     # ══ SIGN IN FORM ══════════════════════════════════════════════════════════
     if st.session_state.auth_tab == "login":
-        st.markdown("""
-        <div style="margin-bottom:1.1rem;">
-          <div style="color:#e8edf8;font-size:1.3rem;font-weight:700;">Welcome back</div>
-          <div style="color:#8694b5;font-size:0.83rem;margin-top:3px;">
-            Enter your credentials to access your account
-          </div>
-        </div>""", unsafe_allow_html=True)
-
         with st.form("login_form"):
-            li_email = st.text_input("Email address", placeholder="you@findiag.com")
-            li_pw    = st.text_input("Password", type="password", placeholder="Enter your password")
+            li_email = st.text_input("✉  Email", placeholder="you@findiag.com")
+            li_pw    = st.text_input("🔒  Password", type="password", placeholder="Enter your password")
             rc1, rc2 = st.columns([1.2, 1])
             with rc1:
                 st.checkbox("Remember me")
@@ -464,30 +456,17 @@ if not st.session_state.authenticated and st.session_state.page == "login":
           </div>
         </div>""", unsafe_allow_html=True)
 
-        st.markdown("""
-        <div style="text-align:center;margin-top:1.1rem;font-size:0.83rem;">
-          <span style="color:#8694b5;">Don't have an account?&nbsp;</span>
-        </div>""", unsafe_allow_html=True)
-
     # ══ REGISTER FORM ═════════════════════════════════════════════════════════
     else:
-        st.markdown("""
-        <div style="margin-bottom:1.1rem;">
-          <div style="color:#e8edf8;font-size:1.3rem;font-weight:700;">Create an account</div>
-          <div style="color:#8694b5;font-size:0.83rem;margin-top:3px;">
-            Fill in the details below to get started
-          </div>
-        </div>""", unsafe_allow_html=True)
-
         with st.form("register_form"):
-            rg_name  = st.text_input("Full Name", placeholder="e.g. Jane Smith")
-            rg_email = st.text_input("Email Address", placeholder="you@company.com")
-            rg_role  = st.selectbox("Access Level",
+            rg_name  = st.text_input("👤  Full Name", placeholder="e.g. Jane Smith")
+            rg_email = st.text_input("✉  Email Address", placeholder="you@company.com")
+            rg_role  = st.selectbox("🛡  Access Level",
                                     ["Viewer — read dashboards",
                                      "Analyst — full analysis tools"])
-            rg_pw    = st.text_input("Password", type="password",
+            rg_pw    = st.text_input("🔒  Password", type="password",
                                      placeholder="At least 6 characters")
-            rg_pw2   = st.text_input("Confirm Password", type="password",
+            rg_pw2   = st.text_input("🔒  Confirm Password", type="password",
                                      placeholder="Repeat password")
             rg_submit = st.form_submit_button("Create Account", use_container_width=True)
 
@@ -510,11 +489,6 @@ if not st.session_state.authenticated and st.session_state.page == "login":
                     st.rerun()
                 else:
                     st.error(msg)
-
-        st.markdown("""
-        <div style="text-align:center;margin-top:1.1rem;font-size:0.83rem;">
-          <span style="color:#8694b5;">Already have an account?&nbsp;</span>
-        </div>""", unsafe_allow_html=True)
 
     # ── Footer row ────────────────────────────────────────────────────────────
     st.markdown("<div style='height:0.2rem'></div>", unsafe_allow_html=True)
