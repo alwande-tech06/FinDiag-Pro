@@ -25,16 +25,16 @@ warnings.filterwarnings("ignore")
 # ── Global Plotly theme ───────────────────────────────────────────────────────
 _t = go.layout.Template()
 _t.layout = go.Layout(
-    paper_bgcolor="#111e36",
-    plot_bgcolor="#0d1526",
-    font=dict(family="Inter, system-ui, sans-serif", color="#c8d6f0", size=11),
-    title=dict(font=dict(size=13, color="#e8edf8"), x=0.01),
-    xaxis=dict(gridcolor="rgba(255,255,255,0.06)", linecolor="rgba(255,255,255,0.1)",
-               tickcolor="#8694b5", showgrid=True, zeroline=False, color="#8694b5"),
-    yaxis=dict(gridcolor="rgba(255,255,255,0.06)", linecolor="rgba(255,255,255,0.1)",
-               tickcolor="#8694b5", showgrid=True, zeroline=False, color="#8694b5"),
-    legend=dict(bgcolor="rgba(13,21,38,0.9)", bordercolor="rgba(255,255,255,0.1)",
-                borderwidth=1, font=dict(size=11, color="#c8d6f0")),
+    paper_bgcolor="#ffffff",
+    plot_bgcolor="#f8fafb",
+    font=dict(family="Inter, system-ui, sans-serif", color="#334155", size=11),
+    title=dict(font=dict(size=13, color="#003087"), x=0.01),
+    xaxis=dict(gridcolor="#EDF2F7", linecolor="#E2E8F0", tickcolor="#94a3b8",
+               showgrid=True, zeroline=False, color="#64748b"),
+    yaxis=dict(gridcolor="#EDF2F7", linecolor="#E2E8F0", tickcolor="#94a3b8",
+               showgrid=True, zeroline=False, color="#64748b"),
+    legend=dict(bgcolor="rgba(255,255,255,0.95)", bordercolor="#E2E8F0",
+                borderwidth=1, font=dict(size=11, color="#334155")),
     colorway=["#003087","#e31837","#0D9488","#D97706","#6366f1","#64748B"],
 )
 pio.templates["findiag"] = _t
@@ -259,17 +259,16 @@ footer {visibility:hidden;}
 [data-testid="stHeader"] {visibility:hidden;}
 [data-testid="stToolbar"] {visibility:hidden;}
 [data-testid="stAppViewContainer"] {
-    background-color:#04071a !important;
-    background-image:radial-gradient(ellipse 120% 70% at 60% -5%,rgba(0,48,135,0.55) 0%,transparent 65%),radial-gradient(ellipse 70% 60% at -10% 110%,rgba(227,24,55,0.3) 0%,transparent 60%),linear-gradient(rgba(255,255,255,0.028) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.028) 1px,transparent 1px) !important;
-    background-size:100% 100%,100% 100%,48px 48px,48px 48px !important;
+    background-color:#f0f4f8 !important;
+    background-image:radial-gradient(ellipse 80% 40% at 50% 0%,rgba(0,48,135,0.08) 0%,transparent 60%) !important;
 }
 .block-container {
-    background:#0c1628 !important;
-    border:1.5px solid rgba(77,139,255,0.2) !important;
+    background:#ffffff !important;
+    border:1.5px solid rgba(0,48,135,0.12) !important;
     border-radius:20px !important;
     max-width:460px !important;
     padding:2.8rem 2.6rem 2.2rem !important;
-    box-shadow:0 28px 80px rgba(0,0,0,0.55) !important;
+    box-shadow:0 8px 40px rgba(0,48,135,0.1),0 2px 8px rgba(0,0,0,0.06) !important;
     margin-top:5vh !important;
 }
 .stButton > button {
@@ -279,63 +278,67 @@ footer {visibility:hidden;}
     height:44px !important;
 }
 .stButton > button[kind="primary"] {
-    background:rgba(0,48,135,0.5) !important;
-    border:1.5px solid rgba(77,139,255,0.45) !important;
-    color:#7ab3ff !important;
+    background:#003087 !important;
+    border:none !important;
+    color:#ffffff !important;
 }
 .stButton > button[kind="secondary"] {
-    background:rgba(255,255,255,0.04) !important;
-    border:1px solid rgba(255,255,255,0.1) !important;
-    color:#8694b5 !important;
+    background:#ffffff !important;
+    border:1.5px solid rgba(0,48,135,0.2) !important;
+    color:#003087 !important;
 }
 div[data-testid="stFormSubmitButton"] > button {
-    background:linear-gradient(135deg,#003087 0%,#003087 100%) !important;
+    background:#003087 !important;
     border:none !important;
     border-radius:11px !important;
     color:#fff !important;
     font-weight:700 !important;
     font-size:1rem !important;
     height:50px !important;
-    box-shadow:0 8px 28px rgba(0,48,135,0.45) !important;
+    box-shadow:0 4px 16px rgba(0,48,135,0.3) !important;
     margin-top:0.2rem !important;
 }
+div[data-testid="stFormSubmitButton"] > button:hover {
+    background:#e31837 !important;
+    box-shadow:0 4px 16px rgba(227,24,55,0.3) !important;
+}
 .stTextInput label {
-    color:#8694b5 !important;
+    color:#5a6a8a !important;
     font-size:0.79rem !important;
     font-weight:600 !important;
     letter-spacing:0.06em !important;
     text-transform:uppercase !important;
 }
 .stTextInput > div > div > input {
-    background:rgba(255,255,255,0.05) !important;
-    border:1.5px solid rgba(255,255,255,0.12) !important;
+    background:#f8f9fb !important;
+    border:1.5px solid rgba(0,48,135,0.15) !important;
     border-radius:10px !important;
-    color:#e8edf8 !important;
+    color:#1a2744 !important;
     padding:0.65rem 1rem !important;
     font-size:0.95rem !important;
 }
 .stTextInput > div > div > input:focus {
-    border-color:#3d7eff !important;
-    box-shadow:0 0 0 3px rgba(61,126,255,0.15) !important;
-    background:rgba(61,126,255,0.06) !important;
+    border-color:#003087 !important;
+    box-shadow:0 0 0 3px rgba(0,48,135,0.1) !important;
+    background:#ffffff !important;
 }
-.stTextInput > div > div > input::placeholder {color:#3a4d6a !important;}
+.stTextInput > div > div > input::placeholder {color:#a8b5cc !important;}
 .stSelectbox label {
-    color:#8694b5 !important;
+    color:#5a6a8a !important;
     font-size:0.79rem !important;
     font-weight:600 !important;
     letter-spacing:0.06em !important;
     text-transform:uppercase !important;
 }
 .stSelectbox > div > div {
-    background:rgba(255,255,255,0.05) !important;
-    border:1.5px solid rgba(255,255,255,0.12) !important;
+    background:#f8f9fb !important;
+    border:1.5px solid rgba(0,48,135,0.15) !important;
     border-radius:10px !important;
-    color:#e8edf8 !important;
+    color:#1a2744 !important;
 }
-.stCheckbox label p {color:#8694b5 !important;font-size:0.85rem !important;}
+.stCheckbox label p {color:#5a6a8a !important;font-size:0.85rem !important;}
 [data-testid="stForm"] {background:transparent !important;border:none !important;padding:0 !important;}
-hr {border-color:rgba(255,255,255,0.08) !important;margin:1rem 0 !important;}
+hr {border-color:rgba(0,48,135,0.1) !important;margin:1rem 0 !important;}
 </style>""", unsafe_allow_html=True)
 
     # ── Logo + app name ───────────────────────────────────────────────────────
@@ -379,8 +382,8 @@ hr {border-color:rgba(255,255,255,0.08) !important;margin:1rem 0 !important;}
     if st.session_state.auth_tab == "login":
         st.markdown("""
         <div style="margin-bottom:1.1rem;">
-          <div style="color:#e8edf8;font-size:1.3rem;font-weight:700;">Welcome back</div>
-          <div style="color:#8694b5;font-size:0.83rem;margin-top:3px;">
+          <div style="color:#1a2744;font-size:1.3rem;font-weight:700;">Welcome back</div>
+          <div style="color:#5a6a8a;font-size:0.83rem;margin-top:3px;">
             Enter your credentials to access your account
           </div>
         </div>""", unsafe_allow_html=True)
@@ -393,7 +396,7 @@ hr {border-color:rgba(255,255,255,0.08) !important;margin:1rem 0 !important;}
                 st.checkbox("Remember me")
             with rc2:
                 st.markdown("""<div style="text-align:right;padding-top:7px;">
-                  <span style="color:#6ea8ff;font-size:0.81rem;font-weight:600;
+                  <span style="color:#003087;font-size:0.81rem;font-weight:600;
                                cursor:pointer;">Forgot password?</span>
                 </div>""", unsafe_allow_html=True)
             li_submit = st.form_submit_button("Sign In", use_container_width=True)
@@ -414,20 +417,20 @@ hr {border-color:rgba(255,255,255,0.08) !important;margin:1rem 0 !important;}
                     st.error("Incorrect email or password. Please try again.")
 
         st.markdown("""
-        <div style="background:rgba(0,48,135,0.14);border:1px solid rgba(61,126,255,0.22);
+        <div style="background:rgba(0,48,135,0.05);border:1px solid rgba(0,48,135,0.15);
                     border-radius:10px;padding:0.8rem 1rem;margin-top:1rem;">
-          <div style="color:#6ea8ff;font-size:0.75rem;font-weight:700;letter-spacing:0.08em;
+          <div style="color:#003087;font-size:0.75rem;font-weight:700;letter-spacing:0.08em;
                       text-transform:uppercase;margin-bottom:6px;">Demo Credentials</div>
-          <div style="color:#8694b5;font-size:0.79rem;line-height:1.9;">
-            <b style="color:#a8c4ff;">Admin</b> &nbsp;&mdash; admin@findiag.com / Admin@123<br>
-            <b style="color:#a8c4ff;">Analyst</b> &mdash; analyst@findiag.com / Analyst@123<br>
-            <b style="color:#a8c4ff;">Viewer</b> &nbsp;&mdash; viewer@findiag.com / Viewer@123
+          <div style="color:#5a6a8a;font-size:0.79rem;line-height:1.9;">
+            <b style="color:#003087;">Admin</b> &nbsp;&mdash; admin@findiag.com / Admin@123<br>
+            <b style="color:#003087;">Analyst</b> &mdash; analyst@findiag.com / Analyst@123<br>
+            <b style="color:#003087;">Viewer</b> &nbsp;&mdash; viewer@findiag.com / Viewer@123
           </div>
         </div>""", unsafe_allow_html=True)
 
         st.markdown("""
         <div style="text-align:center;margin-top:1.1rem;font-size:0.83rem;">
-          <span style="color:#8694b5;">Don't have an account?&nbsp;</span>
+          <span style="color:#5a6a8a;">Don't have an account?&nbsp;</span>
         </div>""", unsafe_allow_html=True)
 
     # ══ REGISTER FORM ═════════════════════════════════════════════════════════
@@ -642,13 +645,16 @@ variance_df["color"] = variance_df.apply(
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
-    _rc = {"Admin": C_RED, "Analyst": C_BLUE, "Viewer": C_TEAL}
+    _role_accent = {"Admin": "#e31837", "Analyst": "#ffffff", "Viewer": "#0D9488"}
+    _accent = _role_accent.get(role, "#ffffff")
     st.markdown(f"""
-    <div style="background:{_rc.get(role,'#64748B')};border-radius:10px;
+    <div style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);
+                border-left:4px solid {_accent};border-radius:10px;
                 padding:10px 14px;margin-bottom:12px;">
-      <p style="color:#FFFFFF;font-weight:800;font-size:0.9rem;margin:0;">{_user['name']}</p>
-      <p style="color:rgba(255,255,255,0.8);font-size:0.72rem;margin:2px 0 0;">
-        {role} &nbsp;&middot;&nbsp; {_user['email']}
+      <p style="color:#ffffff;font-weight:800;font-size:0.9rem;margin:0;">{_user['name']}</p>
+      <p style="color:rgba(255,255,255,0.65);font-size:0.72rem;margin:3px 0 0;">
+        <span style="color:{_accent};font-weight:700;">{role}</span>
+        &nbsp;&middot;&nbsp; {_user['email']}
       </p>
     </div>""", unsafe_allow_html=True)
 
@@ -713,99 +719,105 @@ if not st.session_state.logged_access:
     log_action(_user["email"], f"Dashboard viewed — {role}")
     st.session_state.logged_access = True
 
-# ── Dashboard theme — blended with homepage dark palette ─────────────────────
+# ── Dashboard theme — Pick n Pay official colours ─────────────────────────────
 st.markdown("""<style>
 [data-testid="stAppViewContainer"] {
-    background-color:#04071a !important;
-    background-image:radial-gradient(ellipse 90% 50% at 50% 0%,rgba(0,48,135,0.4) 0%,transparent 65%),radial-gradient(ellipse 50% 40% at 100% 100%,rgba(227,24,55,0.15) 0%,transparent 60%),linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px) !important;
-    background-size:100% 100%,100% 100%,48px 48px,48px 48px !important;
+    background-color:#f0f4f8 !important;
 }
 [data-testid="stSidebar"] {
-    background-color:#07101f !important;
-    border-right:1px solid rgba(255,255,255,0.06) !important;
+    background-color:#003087 !important;
+    border-right:none !important;
 }
-[data-testid="stSidebar"] section {background-color:#07101f !important;}
+[data-testid="stSidebar"] section {background-color:#003087 !important;}
 [data-testid="stSidebar"] p,
 [data-testid="stSidebar"] span,
 [data-testid="stSidebar"] label,
-[data-testid="stSidebar"] h3 {color:#c8d6f0 !important;}
-[data-testid="stSidebar"] .stCaption p {color:#8694b5 !important;}
-[data-testid="stSidebar"] hr {border-color:rgba(255,255,255,0.07) !important;}
+[data-testid="stSidebar"] h3 {color:rgba(255,255,255,0.9) !important;}
+[data-testid="stSidebar"] .stCaption p {color:rgba(255,255,255,0.55) !important;}
+[data-testid="stSidebar"] hr {border-color:rgba(255,255,255,0.15) !important;}
 [data-testid="stSidebar"] .stTextInput > div > div > input {
-    background:rgba(255,255,255,0.05) !important;
-    border:1px solid rgba(255,255,255,0.1) !important;
-    color:#e8edf8 !important;
+    background:rgba(255,255,255,0.12) !important;
+    border:1px solid rgba(255,255,255,0.2) !important;
+    color:#ffffff !important;
     border-radius:8px !important;
 }
 [data-testid="stSidebar"] .stSelectbox > div > div {
-    background:rgba(255,255,255,0.05) !important;
-    border:1px solid rgba(255,255,255,0.1) !important;
-    color:#e8edf8 !important;
+    background:rgba(255,255,255,0.12) !important;
+    border:1px solid rgba(255,255,255,0.2) !important;
+    color:#ffffff !important;
     border-radius:8px !important;
 }
-[data-testid="stSidebar"] .stSlider label {color:#8694b5 !important;}
+[data-testid="stSidebar"] .stSlider label {color:rgba(255,255,255,0.7) !important;}
 [data-testid="stSidebar"] .stButton > button {
-    background:rgba(0,48,135,0.3) !important;
-    border:1px solid rgba(77,139,255,0.25) !important;
-    color:#a8c4ff !important;
+    background:rgba(255,255,255,0.15) !important;
+    border:1px solid rgba(255,255,255,0.25) !important;
+    color:#ffffff !important;
     border-radius:8px !important;
 }
 [data-testid="stSidebar"] .stDownloadButton > button {
-    background:rgba(0,48,135,0.3) !important;
-    border:1px solid rgba(77,139,255,0.25) !important;
-    color:#a8c4ff !important;
+    background:rgba(255,255,255,0.15) !important;
+    border:1px solid rgba(255,255,255,0.25) !important;
+    color:#ffffff !important;
     border-radius:8px !important;
 }
 .stTabs [data-testid="stTab"] {
     background:transparent !important;
-    color:#8694b5 !important;
+    color:#64748b !important;
     font-weight:600 !important;
 }
 .stTabs [aria-selected="true"] {
-    color:#e8edf8 !important;
-    border-bottom-color:#4d8bff !important;
+    color:#003087 !important;
+    border-bottom-color:#003087 !important;
 }
 .stTabs [data-testid="stTabsTabList"] {
-    border-bottom:1px solid rgba(255,255,255,0.08) !important;
+    border-bottom:2px solid rgba(0,48,135,0.12) !important;
+    background:#ffffff !important;
+    border-radius:8px 8px 0 0 !important;
+    padding:0 0.5rem !important;
 }
 [data-testid="stMetric"] {
-    background:#111e36 !important;
-    border:1px solid rgba(255,255,255,0.07) !important;
+    background:#ffffff !important;
+    border:1px solid rgba(0,48,135,0.1) !important;
     border-radius:12px !important;
     padding:1rem !important;
+    box-shadow:0 2px 8px rgba(0,48,135,0.06) !important;
 }
-[data-testid="stMetricLabel"] p {color:#8694b5 !important;}
-[data-testid="stMetricValue"] {color:#e8edf8 !important;}
-[data-testid="stMetricDelta"] {color:#00c896 !important;}
-.stDataFrame {background:#111e36 !important;border-radius:10px !important;}
-h1,h2,h3,h4 {color:#e8edf8 !important;}
-p {color:#c8d6f0 !important;}
+[data-testid="stMetricLabel"] p {color:#64748b !important;}
+[data-testid="stMetricValue"] {color:#1a2744 !important;}
+[data-testid="stMetricDelta"] {color:#16a34a !important;}
+.stDataFrame {background:#ffffff !important;border-radius:10px !important;border:1px solid rgba(0,48,135,0.08) !important;}
+h1,h2,h3,h4 {color:#003087 !important;}
+p {color:#334155 !important;}
+.stSubheader {color:#003087 !important;}
 </style>""", unsafe_allow_html=True)
 
 # ── Header ────────────────────────────────────────────────────────────────────
 st.markdown(f"""
-<div style="background:linear-gradient(135deg,#003087 0%,#001a5c 60%,#111e36 100%);
-     border-radius:16px;padding:1.4rem 2rem;margin-bottom:1rem;
-     border:1px solid rgba(77,139,255,0.15);
-     box-shadow:0 4px 24px rgba(0,0,0,0.45);">
+<div style="background:#003087;border-radius:12px;padding:1.2rem 1.8rem;margin-bottom:1rem;
+     box-shadow:0 4px 16px rgba(0,48,135,0.25);">
   <div style="display:flex;justify-content:space-between;align-items:center;">
-    <div>
-      <h1 style="color:#e8edf8;margin:0;font-size:1.55rem;font-weight:800;letter-spacing:-0.02em;">
-        FinDiag Pro
-      </h1>
-      <p style="color:#7ab3ff;margin:2px 0 0;font-size:0.78rem;letter-spacing:0.1em;
-                text-transform:uppercase;font-weight:600;">
-        AI-Enhanced Financial Health Diagnostics
-      </p>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div style="background:#ffffff;border-radius:8px;padding:4px 10px;
+                  font-size:1.1rem;font-weight:900;color:#003087;line-height:1.2;letter-spacing:-0.02em;">
+        <span style="color:#e31837;">P</span>ick n<span style="color:#e31837;"> P</span>ay
+      </div>
+      <div>
+        <div style="color:#ffffff;font-size:1.2rem;font-weight:800;letter-spacing:-0.01em;">
+          FinDiag Pro
+        </div>
+        <div style="color:rgba(255,255,255,0.7);font-size:0.72rem;letter-spacing:0.1em;
+                    text-transform:uppercase;font-weight:500;">
+          Financial Health Diagnostics
+        </div>
+      </div>
     </div>
     <div style="text-align:right;">
-      <p style="color:#e8edf8;font-weight:700;font-size:0.95rem;margin:0;">{org_name}</p>
-      <p style="color:#8694b5;font-size:0.75rem;margin:2px 0 4px;">
+      <div style="color:#ffffff;font-weight:700;font-size:0.92rem;">{org_name}</div>
+      <div style="color:rgba(255,255,255,0.65);font-size:0.72rem;margin:2px 0 6px;">
         {fiscal_year} &nbsp;&bull;&nbsp; Decision Support Platform
-      </p>
-      <span style="background:rgba(0,200,150,0.15);color:#00c896;font-size:0.65rem;font-weight:700;
-                   padding:3px 12px;border-radius:999px;letter-spacing:0.1em;
-                   border:1px solid rgba(0,200,150,0.3);">
+      </div>
+      <span style="background:#e31837;color:#ffffff;font-size:0.62rem;font-weight:700;
+                   padding:3px 10px;border-radius:999px;letter-spacing:0.1em;">
         &#9679; LIVE
       </span>
     </div>
