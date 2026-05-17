@@ -49,7 +49,7 @@ C_SLATE  = "#64748B"
 
 # ── Page config — must be first Streamlit call ────────────────────────────────
 st.set_page_config(
-    page_title="FinDiag Pro — Financial Health Diagnostics",
+    page_title="Pick n Pay Financial Health System",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -188,16 +188,15 @@ if not st.session_state.authenticated and st.session_state.page == "landing":
     </div>""", unsafe_allow_html=True)
 
     c1, c2, c3, c4 = st.columns(4)
-    for col, icon, title, desc in [
-        (c1, "🏥", "Health Scorecard",  "5-dimension composite financial health index"),
-        (c2, "🔍", "Anomaly Detection", "Z-Score + Isolation Forest AI models"),
-        (c3, "⚠️", "Early Warning",     "Automated risk alerts & 6-month forecast"),
-        (c4, "📈", "Variance Monitor",  "Budget vs actual with automated alerts"),
+    for col, title, desc in [
+        (c1, "Health Scorecard",  "5-dimension composite financial health index"),
+        (c2, "Anomaly Detection", "Z-Score + Isolation Forest AI models"),
+        (c3, "Early Warning",     "Automated risk alerts & 6-month forecast"),
+        (c4, "Variance Monitor",  "Budget vs actual with automated alerts"),
     ]:
         col.markdown(f"""
         <div style="background:#111e36;border:1px solid rgba(255,255,255,0.08);
-                    border-radius:14px;padding:1.4rem 1.2rem;text-align:left;min-height:140px;">
-          <div style="font-size:1.5rem;margin-bottom:10px;">{icon}</div>
+                    border-radius:14px;padding:1.4rem 1.2rem;text-align:left;min-height:120px;">
           <div style="color:#e8edf8;font-weight:700;font-size:0.88rem;
                       font-family:'Barlow Condensed',sans-serif;letter-spacing:0.04em;">{title}</div>
           <div style="color:#8694b5;font-size:0.78rem;margin-top:6px;line-height:1.55;">{desc}</div>
@@ -260,16 +259,15 @@ footer {visibility:hidden;}
 [data-testid="stToolbar"] {visibility:hidden;}
 [data-testid="stAppViewContainer"] {
     background-color:#f0f4f8 !important;
-    background-image:radial-gradient(ellipse 80% 40% at 50% 0%,rgba(0,48,135,0.08) 0%,transparent 60%) !important;
 }
 .block-container {
     background:#ffffff !important;
     border:1.5px solid rgba(0,48,135,0.12) !important;
-    border-radius:20px !important;
+    border-radius:16px !important;
     max-width:460px !important;
-    padding:2.8rem 2.6rem 2.2rem !important;
-    box-shadow:0 8px 40px rgba(0,48,135,0.1),0 2px 8px rgba(0,0,0,0.06) !important;
-    margin-top:5vh !important;
+    padding:2.5rem 2.4rem 2rem !important;
+    box-shadow:0 4px 24px rgba(0,48,135,0.1),0 1px 4px rgba(0,0,0,0.05) !important;
+    margin-top:6vh !important;
 }
 .stButton > button {
     border-radius:10px !important;
@@ -339,24 +337,17 @@ div[data-testid="stFormSubmitButton"] > button:hover {
 .stCheckbox label p {color:#5a6a8a !important;font-size:0.85rem !important;}
 [data-testid="stForm"] {background:transparent !important;border:none !important;padding:0 !important;}
 hr {border-color:rgba(0,48,135,0.1) !important;margin:1rem 0 !important;}
+[data-testid="InputInstructions"] {display:none !important;}
 </style>""", unsafe_allow_html=True)
 
-    # ── Logo + app name ───────────────────────────────────────────────────────
+    # ── App name ──────────────────────────────────────────────────────────────
     st.markdown("""
-    <div style="text-align:center; margin-bottom:1.6rem;">
-      <div style="display:inline-flex;align-items:center;justify-content:center;
-                  width:60px;height:60px;border-radius:16px;
-                  background:linear-gradient(135deg,#003087 0%,#e31837 100%);
-                  font-family:'Barlow Condensed',sans-serif;font-size:1.35rem;
-                  font-weight:900;color:#fff;margin-bottom:0.9rem;
-                  box-shadow:0 6px 24px rgba(227,24,55,0.38);">
-        PnP
+    <div style="text-align:center;margin-bottom:1.6rem;">
+      <div style="color:#003087;font-family:'Barlow Condensed',sans-serif;
+                  font-size:1.7rem;font-weight:900;letter-spacing:-0.01em;">
+        Pick n Pay Financial Health System
       </div>
-      <div style="color:#e8edf8;font-family:'Barlow Condensed',sans-serif;
-                  font-size:1.55rem;font-weight:900;letter-spacing:-0.01em;">
-        FinDiag Pro
-      </div>
-      <div style="color:#8694b5;font-size:0.8rem;margin-top:3px;">
+      <div style="color:#5a6a8a;font-size:0.82rem;margin-top:4px;">
         Pick n Pay &middot; Financial Health System
       </div>
     </div>""", unsafe_allow_html=True)
@@ -415,18 +406,6 @@ hr {border-color:rgba(0,48,135,0.1) !important;margin:1rem 0 !important;}
                     st.rerun()
                 else:
                     st.error("Incorrect email or password. Please try again.")
-
-        st.markdown("""
-        <div style="background:rgba(0,48,135,0.05);border:1px solid rgba(0,48,135,0.15);
-                    border-radius:10px;padding:0.8rem 1rem;margin-top:1rem;">
-          <div style="color:#003087;font-size:0.75rem;font-weight:700;letter-spacing:0.08em;
-                      text-transform:uppercase;margin-bottom:6px;">Demo Credentials</div>
-          <div style="color:#5a6a8a;font-size:0.79rem;line-height:1.9;">
-            <b style="color:#003087;">Admin</b> &nbsp;&mdash; admin@findiag.com / Admin@123<br>
-            <b style="color:#003087;">Analyst</b> &mdash; analyst@findiag.com / Analyst@123<br>
-            <b style="color:#003087;">Viewer</b> &nbsp;&mdash; viewer@findiag.com / Viewer@123
-          </div>
-        </div>""", unsafe_allow_html=True)
 
         st.markdown("""
         <div style="text-align:center;margin-top:1.1rem;font-size:0.83rem;">
@@ -488,7 +467,7 @@ hr {border-color:rgba(0,48,135,0.1) !important;margin:1rem 0 !important;}
     st.markdown("""
     <div style="text-align:center;margin-top:0.9rem;">
       <span style="color:#243350;font-size:0.67rem;letter-spacing:0.07em;">
-        Durban University of Technology &nbsp;&middot;&nbsp; FinDiag Pro v2.0
+        Durban University of Technology &nbsp;&middot;&nbsp; Pick n Pay Financial Health System
       </span>
     </div>""", unsafe_allow_html=True)
     st.stop()
@@ -573,7 +552,7 @@ def build_pdf(health, latest_r, org, fy) -> bytes:
     pdf.add_page()
     pdf.set_font("Helvetica", "B", 22)
     pdf.set_text_color(11, 31, 58)
-    pdf.cell(0, 12, "FinDiag Pro", ln=True, align="C")
+    pdf.cell(0, 12, "Pick n Pay Financial Health System", ln=True, align="C")
     pdf.set_font("Helvetica", "", 11)
     pdf.set_text_color(100, 116, 139)
     pdf.cell(0, 7, "AI-Enhanced Financial Health Diagnostics Report", ln=True, align="C")
@@ -645,15 +624,12 @@ variance_df["color"] = variance_df.apply(
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
-    _role_accent = {"Admin": "#e31837", "Analyst": "#ffffff", "Viewer": "#0D9488"}
-    _accent = _role_accent.get(role, "#ffffff")
     st.markdown(f"""
     <div style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);
-                border-left:4px solid {_accent};border-radius:10px;
-                padding:10px 14px;margin-bottom:12px;">
+                border-radius:10px;padding:10px 14px;margin-bottom:12px;">
       <p style="color:#ffffff;font-weight:800;font-size:0.9rem;margin:0;">{_user['name']}</p>
       <p style="color:rgba(255,255,255,0.65);font-size:0.72rem;margin:3px 0 0;">
-        <span style="color:{_accent};font-weight:700;">{role}</span>
+        <span style="color:#ffffff;font-weight:700;">{role}</span>
         &nbsp;&middot;&nbsp; {_user['email']}
       </p>
     </div>""", unsafe_allow_html=True)
@@ -708,11 +684,11 @@ with st.sidebar:
     if st.button("Sign Out", use_container_width=True):
         log_action(_user["email"], "Logout")
         st.session_state.update({"authenticated":False,"user":None,
-                                  "page":"landing","logged_access":False})
+                                  "page":"login","logged_access":False})
         st.rerun()
 
     st.markdown("---")
-    st.caption("FinDiag Pro v2.0\nDurban University of Technology")
+    st.caption("Pick n Pay Financial Health System\nDurban University of Technology")
 
 # ── Log access once per session ───────────────────────────────────────────────
 if not st.session_state.logged_access:
@@ -765,9 +741,9 @@ st.markdown("""<style>
     border-radius:8px !important;
 }
 [data-testid="stSidebar"] [data-testid="stFileUploader"] button {
-    background:#ffffff !important;
+    background:#c8d9f5 !important;
     border:none !important;
-    color:#003087 !important;
+    color:#000000 !important;
     font-weight:700 !important;
     border-radius:8px !important;
 }
@@ -797,7 +773,7 @@ st.markdown("""<style>
     box-shadow:0 2px 8px rgba(0,48,135,0.06) !important;
 }
 [data-testid="stMetricLabel"] p {color:#64748b !important;}
-[data-testid="stMetricValue"] {color:#1a2744 !important;}
+[data-testid="stMetricValue"] {color:#1a2744 !important;white-space:normal !important;overflow:visible !important;text-overflow:unset !important;word-break:break-word !important;}
 [data-testid="stMetricDelta"] {color:#16a34a !important;}
 .stDataFrame {background:#ffffff !important;border-radius:10px !important;border:1px solid rgba(0,48,135,0.08) !important;}
 h1,h2,h3,h4 {color:#003087 !important;}
@@ -817,7 +793,7 @@ st.markdown(f"""
       </div>
       <div>
         <div style="color:#ffffff;font-size:1.2rem;font-weight:800;letter-spacing:-0.01em;">
-          FinDiag Pro
+          PnP Financial Health System
         </div>
         <div style="color:rgba(255,255,255,0.7);font-size:0.72rem;letter-spacing:0.1em;
                     text-transform:uppercase;font-weight:500;">
@@ -849,7 +825,7 @@ def render_health_scorecard():
     st.caption("Composite financial health index based on liquidity, profitability, solvency, efficiency and cash flow.")
 
     col1, col2, col3, col4, col5 = st.columns(5)
-    col1.metric("Overall Score", f"{health['overall']}/100",
+    col1.metric("Overall Score", f"{health['overall']} / 100",
                 delta=f"{'▼' if health['overall'] < 70 else '▲'} Q-o-Q")
     col2.metric("Risk Category", health["category"])
     col3.metric("Gross Profit Margin", f"{health['gpm']}%")
@@ -1215,7 +1191,7 @@ def render_anomaly_detection():
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Anomalies Detected", int(_n), "This period")
     c2.metric("Max Z-Score", f"{max_z:.2f}", f"Threshold: {zscore_threshold}")
-    c3.metric("Model", "Z-Score + IsoForest")
+    c3.metric("Model", "Z-Score + IF")
     c4.metric("Fraud Risk Signal", "Low" if _n < 4 else "Medium")
 
     st.markdown("---")
@@ -1442,7 +1418,7 @@ def render_early_warning():
     <div style="margin-top:2rem;border-top:1px solid #E2E8F0;padding-top:14px;
          display:flex;justify-content:space-between;align-items:center;">
       <span style="color:#94A3B8;font-size:11px;font-weight:600;">
-        FinDiag Pro v2.0 &mdash; AI-Enhanced Financial Diagnostics
+        Pick n Pay Financial Health System &mdash; AI-Enhanced Financial Diagnostics
       </span>
       <span style="color:#94A3B8;font-size:11px;">
         Managerial Finance PBL &bull; Pathway B &bull; Durban University of Technology
