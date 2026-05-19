@@ -1,9 +1,3 @@
-"""
-FinDiag Pro v2.0 — AI-Enhanced Organisational Financial Health Diagnostics
-Pathway B: Performance Monitoring & Early Warning Systems
-Durban University of Technology — Managerial Finance PBL
-"""
-
 import streamlit as st
 import pandas as pd
 import numpy as np
