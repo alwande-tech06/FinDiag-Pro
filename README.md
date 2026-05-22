@@ -58,10 +58,11 @@ pip install -r requirements.txt
 ```
 python generate_data.py
 ```
-Creates three CSV files in the `data/` folder:
-- `monthly_financials.csv` — 24 months of revenue, expenses, and cash flow
-- `balance_sheet.csv` — 8 quarters of balance sheet data
-- `variance.csv` — Budget vs Actual for 6 categories
+Creates four CSV files in the `data/` folder:
+- `quarterly_financials.csv` — 12 quarters of revenue, expenses, and cash flow (FY2023–FY2025)
+- `balance_sheet.csv` — 12 quarters of balance sheet data
+- `variance.csv` — Budget vs Actual for FY2023, FY2024 and FY2025
+- `revenue_trend.csv` — Annual revenue trend 2021–2025
 
 ### Step 4 — Run the dashboard
 ```
@@ -87,7 +88,7 @@ findiag/
 ├── requirements.txt     ← Python library dependencies
 ├── README.md            ← This file
 └── data/
-    ├── monthly_financials.csv
+    ├── quarterly_financials.csv
     ├── balance_sheet.csv
     ├── variance.csv
     └── users.json       ← User accounts (auto-created on first run)

@@ -134,31 +134,45 @@ cr_f = last["current_assets"] / last["current_liabilities"]
 qr_f = last["quick_assets"]   / last["current_liabilities"]
 print(f"Q12 ratios: CR={cr_f:.3f}  QR={qr_f:.3f}")
 
-# ── Budget vs Actual + YoY — exact document figures (ZAR millions) ────────────
-# FY2025 audited results (53 weeks ended 02 March 2025, JSE SENS 26 May 2025)
+# ── Budget vs Actual — all years (ZAR millions) ───────────────────────────────
+# FY2025 audited (JSE SENS, 26 May 2025) | FY2024 audited | FY2023 audited
 categories  = ["Sales Revenue", "Gross Profit", "Operating Expenses",
                 "Finance Costs", "Net Profit / Loss"]
 actual_2025 = [ 118_610,         21_764,          22_954,        1_100,    -736]
 budget_2025 = [ 116_000,         21_400,          21_500,        1_000,     900]
 actual_2024 = [ 112_295,         20_280,          22_518,        1_390,  -3_301]
+budget_2024 = [ 114_940,         22_960,          20_500,          700,   2_500]
+actual_2023 = [ 108_570,         20_628,          20_200,          700,   1_170]
+budget_2023 = [ 107_000,         20_000,          19_500,          650,   1_000]
 cat_type    = ["Revenue",       "Profit",        "Expense",    "Expense","Profit"]
 
 var_df = pd.DataFrame({
     "category":    categories,
+    "type":        cat_type,
+    # FY2025
     "actual_2025": actual_2025,
     "budget_2025": budget_2025,
+    "variance_2025":    [round(a-b, 2) for a, b in zip(actual_2025, budget_2025)],
+    "variance_pct_2025":[round((a-b)/abs(b)*100, 2) for a, b in zip(actual_2025, budget_2025)],
+    # FY2024
     "actual_2024": actual_2024,
-    "variance":    [round(a-b, 2) for a, b in zip(actual_2025, budget_2025)],
-    "variance_pct":[round((a-b)/abs(b)*100, 2) for a, b in zip(actual_2025, budget_2025)],
+    "budget_2024": budget_2024,
+    "variance_2024":    [round(a-b, 2) for a, b in zip(actual_2024, budget_2024)],
+    "variance_pct_2024":[round((a-b)/abs(b)*100, 2) for a, b in zip(actual_2024, budget_2024)],
+    # FY2023
+    "actual_2023": actual_2023,
+    "budget_2023": budget_2023,
+    "variance_2023":    [round(a-b, 2) for a, b in zip(actual_2023, budget_2023)],
+    "variance_pct_2023":[round((a-b)/abs(b)*100, 2) for a, b in zip(actual_2023, budget_2023)],
+    # YoY (always latest vs prior)
     "yoy_change":  [round(a5-a4, 2) for a5, a4 in zip(actual_2025, actual_2024)],
     "yoy_pct":     [round((a5-a4)/abs(a4)*100, 2) for a5, a4 in zip(actual_2025, actual_2024)],
-    "type":        cat_type,
 })
 var_df["status"] = var_df.apply(
     lambda r: "Favourable"
-    if (r["type"] == "Revenue" and r["variance"] > 0)
-    or (r["type"] == "Expense" and r["variance"] < 0)
-    or (r["type"] == "Profit"  and r["variance"] > 0)
+    if (r["type"] == "Revenue" and r["variance_2025"] > 0)
+    or (r["type"] == "Expense" and r["variance_2025"] < 0)
+    or (r["type"] == "Profit"  and r["variance_2025"] > 0)
     else "Unfavourable", axis=1
 )
 var_df.to_csv("data/variance.csv", index=False)

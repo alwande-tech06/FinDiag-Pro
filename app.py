@@ -480,7 +480,6 @@ def _read_csv_clean(path, **kwargs):
     raw = raw.replace("\r\n", "\n").replace("\r", "\n")
     return pd.read_csv(io.StringIO(raw), **kwargs)
 
-@st.cache_data
 def load_data():
     monthly  = _read_csv_clean("data/quarterly_financials.csv", parse_dates=["date"])
     balance  = _read_csv_clean("data/balance_sheet.csv")
@@ -1124,63 +1123,89 @@ def render_variance_monitor():
     st.subheader("Variance Analysis Monitoring System")
     st.caption("Compares budgeted vs actual financial performance. Flags unfavourable variances and overspend alerts.")
 
-    rev_row = variance_df[variance_df["category"] == "Sales Revenue"].iloc[0]
-    exp_row = variance_df[variance_df["category"] == "Operating Expenses"].iloc[0]
-    pnl_row = variance_df[variance_df["category"] == "Net Profit / Loss"].iloc[0]
-    gp_row  = variance_df[variance_df["category"] == "Gross Profit"].iloc[0]
+    # Pick year columns based on fiscal_year filter
+    _fy_map = {"FY 2025": 2025, "FY 2024": 2024, "FY 2023": 2023}
+    _yr = _fy_map.get(fiscal_year, 2025)
+    _prior = _yr - 1
+    _act_col  = f"actual_{_yr}"
+    _bud_col  = f"budget_{_yr}"
+    _var_col  = f"variance_{_yr}"
+    _varp_col = f"variance_pct_{_yr}"
+    _prior_col = f"actual_{_prior}"
+
+    # Recompute status for selected year
+    _vdf = variance_df.copy()
+    _vdf["_var"]  = _vdf[_var_col]
+    _vdf["_varp"] = _vdf[_varp_col]
+    _vdf["color"] = _vdf.apply(
+        lambda r: "#16a34a" if (r["type"]=="Revenue" and r["_var"]>0)
+                  or (r["type"]=="Expense" and r["_var"]<0)
+                  or (r["type"]=="Profit"  and r["_var"]>0)
+                  else "#dc2626", axis=1)
+
+    rev_row = _vdf[_vdf["category"] == "Sales Revenue"].iloc[0]
+    exp_row = _vdf[_vdf["category"] == "Operating Expenses"].iloc[0]
+    pnl_row = _vdf[_vdf["category"] == "Net Profit / Loss"].iloc[0]
+    gp_row  = _vdf[_vdf["category"] == "Gross Profit"].iloc[0]
 
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Revenue vs Budget",      f"R{rev_row['variance']/1000:+.1f}B", f"{rev_row['variance_pct']:+.1f}%")
-    c2.metric("OpEx vs Budget",         f"R{exp_row['variance']/1000:+.1f}B", f"{exp_row['variance_pct']:+.1f}%",
+    c1.metric("Revenue vs Budget",      f"R{rev_row['_var']/1000:+.1f}B", f"{rev_row['_varp']:+.1f}%")
+    c2.metric("OpEx vs Budget",         f"R{exp_row['_var']/1000:+.1f}B", f"{exp_row['_varp']:+.1f}%",
               delta_color="inverse")
-    c3.metric("Gross Profit vs Budget", f"R{gp_row['variance']/1000:+.1f}B",  f"{gp_row['variance_pct']:+.1f}%")
-    c4.metric("Net Profit vs Budget",   f"R{pnl_row['variance']/1000:+.1f}B", f"{pnl_row['variance_pct']:+.1f}%")
+    c3.metric("Gross Profit vs Budget", f"R{gp_row['_var']/1000:+.1f}B",  f"{gp_row['_varp']:+.1f}%")
+    c4.metric("Net Profit vs Budget",   f"R{pnl_row['_var']/1000:+.1f}B", f"{pnl_row['_varp']:+.1f}%")
 
     st.markdown("---")
-    st.markdown("##### Budget vs Actual — FY2025 (ZAR millions)")
-    display_var = variance_df.copy()
-    for col in ["actual_2025","budget_2025","actual_2024"]:
+    st.markdown(f"##### Budget vs Actual — FY{_yr} (ZAR millions)")
+    display_var = _vdf.copy()
+    for col in [_act_col, _bud_col] + ([_prior_col] if _prior_col in display_var.columns else []):
         display_var[col] = display_var[col].apply(lambda x: f"R{x/1000:+.2f}B")
-    display_var["variance"]     = display_var["variance"].apply(lambda x: f"R{x/1000:+.2f}B")
-    display_var["variance_pct"] = display_var["variance_pct"].apply(lambda x: f"{x:+.1f}%")
-    display_var["yoy_change"]   = display_var["yoy_change"].apply(lambda x: f"R{x/1000:+.2f}B")
-    display_var["yoy_pct"]      = display_var["yoy_pct"].apply(lambda x: f"{x:+.1f}%")
+    display_var["_var"]  = display_var["_var"].apply(lambda x: f"R{x/1000:+.2f}B")
+    display_var["_varp"] = display_var["_varp"].apply(lambda x: f"{x:+.1f}%")
+    display_var["yoy_change"] = display_var["yoy_change"].apply(lambda x: f"R{x/1000:+.2f}B")
+    display_var["yoy_pct"]    = display_var["yoy_pct"].apply(lambda x: f"{x:+.1f}%")
+    _prior_label = f"Actual {_prior}"
     display_var = display_var.rename(columns={
-        "category":"Category","budget_2025":"Budget 2025","actual_2025":"Actual 2025",
-        "actual_2024":"Actual 2024","variance":"Budget Variance",
-        "variance_pct":"Variance %","yoy_change":"YoY Change","yoy_pct":"YoY %",
-        "type":"Type","status":"Status",
+        "category": "Category", "type": "Type", "status": "Status",
+        _bud_col: f"Budget {_yr}", _act_col: f"Actual {_yr}",
+        "_var": "Budget Variance", "_varp": "Variance %",
+        _prior_col: _prior_label,
+        "yoy_change": "YoY Change", "yoy_pct": "YoY %",
     })
-    st.dataframe(display_var[["Category","Type","Budget 2025","Actual 2025","Budget Variance",
-                               "Variance %","Actual 2024","YoY Change","YoY %","Status"]],
-                 use_container_width=True, hide_index=True)
+    _cols = ["Category","Type",f"Budget {_yr}",f"Actual {_yr}","Budget Variance","Variance %"]
+    if _prior_label in display_var.columns:
+        _cols += [_prior_label, "YoY Change", "YoY %"]
+    _cols += ["Status"]
+    st.dataframe(display_var[_cols], use_container_width=True, hide_index=True)
 
     st.markdown("---")
     c1, c2 = st.columns(2)
     with c1:
         fig_var = go.Figure()
-        fig_var.add_trace(go.Bar(name="Budget 2025", x=variance_df["category"],
-                                 y=variance_df["budget_2025"] / 1000,
+        fig_var.add_trace(go.Bar(name=f"Budget {_yr}", x=_vdf["category"],
+                                 y=_vdf[_bud_col] / 1000,
                                  marker_color="rgba(29,78,216,0.55)",
                                  marker_line=dict(color=C_BLUE, width=1)))
-        fig_var.add_trace(go.Bar(name="Actual 2025", x=variance_df["category"],
-                                 y=variance_df["actual_2025"] / 1000,
+        fig_var.add_trace(go.Bar(name=f"Actual {_yr}", x=_vdf["category"],
+                                 y=_vdf[_act_col] / 1000,
                                  marker_color="rgba(220,38,38,0.55)",
                                  marker_line=dict(color=C_RED, width=1)))
-        fig_var.add_trace(go.Bar(name="Actual 2024", x=variance_df["category"],
-                                 y=variance_df["actual_2024"] / 1000,
-                                 marker_color="rgba(13,148,136,0.45)",
-                                 marker_line=dict(color=C_TEAL, width=1)))
-        fig_var.update_layout(barmode="group", title="Budget vs Actual vs Prior Year (R billions)",
+        if _prior_col in _vdf.columns:
+            fig_var.add_trace(go.Bar(name=f"Actual {_prior}", x=_vdf["category"],
+                                     y=_vdf[_prior_col] / 1000,
+                                     marker_color="rgba(13,148,136,0.45)",
+                                     marker_line=dict(color=C_TEAL, width=1)))
+        fig_var.update_layout(barmode="group",
+                              title=f"Budget vs Actual vs Prior Year (R billions) — FY{_yr}",
                               height=300, margin=dict(t=50,b=20), yaxis_title="R billions",
                               legend=dict(orientation="h", y=-0.3), xaxis_tickangle=-20)
         st.plotly_chart(fig_var, use_container_width=True)
 
     with c2:
         fig_wfall = go.Figure(go.Bar(
-            x=variance_df["category"], y=variance_df["variance"] / 1000,
-            marker_color=variance_df["color"],
-            text=[f"R{v/1000:+.1f}B" for v in variance_df["variance"]],
+            x=_vdf["category"], y=_vdf[_var_col] / 1000,
+            marker_color=_vdf["color"],
+            text=[f"R{v/1000:+.1f}B" for v in _vdf[_var_col]],
             textposition="outside",
         ))
         fig_wfall.add_hline(y=0, line_color="gray", line_width=1)
@@ -1190,13 +1215,30 @@ def render_variance_monitor():
                                 xaxis_tickangle=-20)
         st.plotly_chart(fig_wfall, use_container_width=True)
 
+    _trend3 = trend_df[trend_df["year"] >= 2023].reset_index(drop=True)
+    _sel_year = {"FY 2025": 2025, "FY 2024": 2024, "FY 2023": 2023}.get(fiscal_year)
+    _trend_colors = [
+        C_BLUE if (_sel_year is None or yr == _sel_year) else "rgba(29,78,216,0.22)"
+        for yr in _trend3["year"]
+    ]
+    _trend_text = [
+        f"R{v/1000:.1f}B" if (_sel_year is None or yr == _sel_year) else ""
+        for yr, v in zip(_trend3["year"], _trend3["revenue"])
+    ]
     fig_trend_annual = go.Figure()
-    fig_trend_annual.add_trace(go.Bar(x=trend_df["year"].astype(str),
-                                      y=trend_df["revenue"] / 1000,
-                                      name="Revenue", marker_color="rgba(29,78,216,0.55)"))
+    fig_trend_annual.add_trace(go.Bar(
+        x=_trend3["year"].astype(str),
+        y=_trend3["revenue"] / 1000,
+        name="Revenue",
+        marker_color=_trend_colors,
+        text=_trend_text,
+        textposition="outside",
+        textfont=dict(size=11, color=C_BLUE),
+    ))
+    _title_suffix = f" — {fiscal_year}" if _sel_year else ""
     fig_trend_annual.update_layout(
-        title="Pick n Pay Annual Revenue Trend (2021–2025, R billions)",
-        height=260, margin=dict(t=50,b=20), yaxis_title="R billions", showlegend=False)
+        title=f"Pick n Pay Annual Revenue Trend (2023–2025, R billions){_title_suffix}",
+        height=270, margin=dict(t=50, b=20), yaxis_title="R billions", showlegend=False)
     st.plotly_chart(fig_trend_annual, use_container_width=True)
 
     fig_rev = go.Figure()
@@ -1216,7 +1258,8 @@ def render_variance_monitor():
         st.markdown("#### Automated Variance Alerts")
         for _, row in variance_df.iterrows():
             if row["status"] == "Unfavourable":
-                pct = abs(row["variance_pct"])
+                _fy_yr = {"FY 2025":2025,"FY 2024":2024,"FY 2023":2023}.get(fiscal_year, 2025)
+                pct = abs(row[f"variance_pct_{_fy_yr}"])
                 if pct > 15:
                     bg, border, icon = "#FFF1F2","#E11D48","🔴"
                     note = "Immediate executive review required."
@@ -1231,7 +1274,7 @@ def render_variance_monitor():
                     {icon} {row['category']}
                   </span>
                   <span style="color:#475569;font-size:12px;">
-                    &nbsp;&mdash; R{abs(row['variance'])/1000:.2f}B unfavourable
+                    &nbsp;&mdash; R{abs(row[f'variance_{_fy_yr}'])/1000:.2f}B unfavourable
                     ({pct:.1f}% vs budget). {note}
                   </span>
                 </div>""", unsafe_allow_html=True)
@@ -1345,8 +1388,8 @@ def render_early_warning():
         "Solvency Risk":      risk_level([de > 2.5, de > 1.8]),
         "Profitability Risk": risk_level([health["npm"] < 5, health["npm"] < 12]),
         "Anomaly / Fraud":    risk_level([n_anomalies > 5, n_anomalies > 2]),
-        "Operational Risk":   risk_level([abs(variance_df["variance_pct"]).mean() > 25,
-                                          abs(variance_df["variance_pct"]).mean() > 12]),
+        "Operational Risk":   risk_level([abs(variance_df["variance_pct_2025"]).mean() > 25,
+                                          abs(variance_df["variance_pct_2025"]).mean() > 12]),
     }
 
     cols = st.columns(3)
@@ -1413,7 +1456,7 @@ def render_early_warning():
             min(100, max(0, 100 - health["gpm"] * 1.5)),
             min(100, max(0, (1 - anomaly_df["net_cashflow"].tail(4).mean() /
                              anomaly_df["revenue"].tail(4).mean()) * 100)),
-            min(100, max(0, abs(variance_df["variance_pct"]).mean() * 3)),
+            min(100, max(0, abs(variance_df["variance_pct_2025"]).mean() * 3)),
         ]
         dim_labels = ["Liquidity","Profitability","Leverage","Margin","Cash Flow","Variance"]
         fig_rr = go.Figure(go.Scatterpolar(

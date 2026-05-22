@@ -98,3 +98,7 @@ timestamp,user,action
 2026-05-22 18:59:12,analyst@findiag.com,Logout
 2026-05-22 18:59:39,admin@findiag.com,Login — Role: Admin
 2026-05-22 18:59:40,admin@findiag.com,Dashboard viewed — Admin
+2026-05-22 19:50:32,analyst@findiag.com,Login — Role: Analyst
+2026-05-22 19:50:33,analyst@findiag.com,Dashboard viewed — Analyst
+2026-05-22 20:18:28,analyst@findiag.com,Login — Role: Analyst
+2026-05-22 20:18:29,analyst@findiag.com,Dashboard viewed — Analyst
