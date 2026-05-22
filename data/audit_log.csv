@@ -56,3 +56,32 @@ timestamp,user,action
 2026-05-17 02:25:49,analyst@findiag.com,Login — Role: Analyst
 2026-05-17 02:25:49,analyst@findiag.com,Dashboard viewed — Analyst
 2026-05-17 02:26:11,analyst@findiag.com,Logout
+2026-05-21 22:02:31,analyst@findiag.com,Login — Role: Analyst
+2026-05-21 22:02:33,analyst@findiag.com,Dashboard viewed — Analyst
+2026-05-21 22:07:48,admin@findiag.com,Login — Role: Admin
+2026-05-21 22:07:49,admin@findiag.com,Dashboard viewed — Admin
+2026-05-21 22:09:57,admin@findiag.com,Uploaded: variance 1.xlsx
+2026-05-22 00:23:36,admin@findiag.com,Login — Role: Admin
+2026-05-22 00:23:37,admin@findiag.com,Dashboard viewed — Admin
+2026-05-22 00:37:48,analyst@findiag.com,Login — Role: Analyst
+2026-05-22 00:37:49,analyst@findiag.com,Dashboard viewed — Analyst
+2026-05-22 12:02:59,analyst@findiag.com,Login — Role: Analyst
+2026-05-22 12:03:00,analyst@findiag.com,Dashboard viewed — Analyst
+2026-05-22 12:12:53,admin@findiag.com,Login — Role: Admin
+2026-05-22 12:12:54,admin@findiag.com,Dashboard viewed — Admin
+2026-05-22 12:20:46,admin@findiag.com,Login — Role: Admin
+2026-05-22 12:20:46,admin@findiag.com,Dashboard viewed — Admin
+2026-05-22 12:21:45,admin@findiag.com,Uploaded: quarterly_financials.xlsx
+2026-05-22 12:21:59,admin@findiag.com,Uploaded: quarterly_financials.xlsx
+2026-05-22 12:22:00,admin@findiag.com,Uploaded: quarterly_financials.xlsx
+2026-05-22 12:22:04,admin@findiag.com,Uploaded: quarterly_financials.xlsx
+2026-05-22 12:22:04,admin@findiag.com,Uploaded: quarterly_financials.xlsx
+2026-05-22 12:26:57,admin@findiag.com,Uploaded: quarterly_financials (1).xlsx
+2026-05-22 12:27:20,admin@findiag.com,Uploaded: quarterly_financials.csv
+2026-05-22 12:27:29,admin@findiag.com,Uploaded: quarterly_financials.csv
+2026-05-22 12:27:29,admin@findiag.com,Uploaded: quarterly_financials.csv
+2026-05-22 12:27:49,admin@findiag.com,Uploaded: quarterly_financials (1).xlsx
+2026-05-22 12:27:57,admin@findiag.com,Uploaded: quarterly_financials (1).xlsx
+2026-05-22 12:27:58,admin@findiag.com,Uploaded: quarterly_financials (1).xlsx
+2026-05-22 12:28:07,admin@findiag.com,Uploaded: quarterly_financials (1).xlsx
+2026-05-22 12:28:07,admin@findiag.com,Uploaded: quarterly_financials (1).xlsx

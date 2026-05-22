@@ -4,15 +4,12 @@ Pick n Pay Financial Data Generator — calibrated to published annual results.
 Annual targets:
   FY2023: Revenue R108.57B | Net Profit  R1.17B  | GPM ~19.0%
   FY2024: Revenue R114.94B | Net Loss   -R3.19B  | GPM  18.1%
+  FY2025: Revenue R118.61B | Net Loss   -R0.74B  | GPM  18.4%  (audited, 53 wks ended 02 Mar 2025)
 
 NP derivation (ZAR millions):
   2023: GP(20,628) - OpEx(18,758) - FinCosts(700)   =  1,170  ✓
   2024: GP(20,804) - OpEx(22,604) - FinCosts(1,390) = -3,190  ✓
-
-Note: "Operating Expenses" in the published report (R20.2B / R22.6B) includes
-items outside this simplified P&L model. The variance table stores those
-exact published figures; the monthly model uses effective opex to hit
-the correct net profit outcome.
+  2025: GP(21,764) - OpEx(21,400) - FinCosts(1,100) =   -736  ✓
 """
 
 import pandas as pd
@@ -26,27 +23,25 @@ os.makedirs("data", exist_ok=True)
 TARGETS = {
     2023: {"rev": 108_570, "gpm": 0.190, "eff_opex": 18_758, "fcosts":   700},
     2024: {"rev": 114_940, "gpm": 0.181, "eff_opex": 22_400, "fcosts": 1_390},
+    2025: {"rev": 118_610, "gpm": 0.1835,"eff_opex": 21_400, "fcosts": 1_100},
 }
 
-# ── Monthly Financial Data (Jan 2023 – Dec 2024) ──────────────────────────────
-months = pd.date_range(start="2023-01-01", periods=24, freq="MS")
+# ── Quarterly Financial Data (Q1 2023 – Q4 2025, 12 quarters) ────────────────
+quarters = pd.date_range(start="2023-01-01", periods=12, freq="QS")
 
 revenue, cogs_list, opex_list, fcosts_list = [], [], [], []
 cash_inflow, cash_outflow = [], []
 
-for i, m in enumerate(months):
-    t  = TARGETS[m.year]
-    # Retail seasonality: December peak (+18%), January trough (-13%)
-    seasonal = 1.0 + 0.10 * np.sin(2 * np.pi * (m.month - 3) / 12)
-    if m.month == 12: seasonal *= 1.18
-    if m.month == 1:  seasonal *= 0.87
+for i, q in enumerate(quarters):
+    t = TARGETS[q.year]
+    qtr = (i % 4) + 1
+    # Retail seasonality: Q4 (Oct–Dec) peak, Q1 (Jan–Mar) softer
+    seasonal = {1: 0.93, 2: 0.98, 3: 1.02, 4: 1.07}[qtr]
 
-    rev  = (t["rev"] / 12) * seasonal * np.random.uniform(0.97, 1.03)
+    rev  = (t["rev"] / 4) * seasonal * np.random.uniform(0.97, 1.03)
     cog  = rev * (1 - t["gpm"]) * np.random.uniform(0.99, 1.01)
-
-    exp  = (t["eff_opex"] / 12) * np.random.uniform(0.97, 1.03)
-    fc   = (t["fcosts"]  / 12) * np.random.uniform(0.90, 1.10)
-
+    exp  = (t["eff_opex"] / 4) * np.random.uniform(0.97, 1.03)
+    fc   = (t["fcosts"]  / 4) * np.random.uniform(0.90, 1.10)
     ci   = rev * np.random.uniform(0.85, 0.94)
     co   = (cog + exp) * np.random.uniform(0.88, 0.97)
 
@@ -57,8 +52,8 @@ for i, m in enumerate(months):
     cash_inflow.append(round(ci, 2))
     cash_outflow.append(round(co, 2))
 
-monthly_df = pd.DataFrame({
-    "date":               months,
+quarterly_df = pd.DataFrame({
+    "date":               quarters,
     "revenue":            revenue,
     "cogs":               cogs_list,
     "operating_expenses": opex_list,
@@ -66,31 +61,25 @@ monthly_df = pd.DataFrame({
     "cash_inflow":        cash_inflow,
     "cash_outflow":       cash_outflow,
 })
-monthly_df["gross_profit"] = monthly_df["revenue"] - monthly_df["cogs"]
-monthly_df["net_profit"]   = (monthly_df["revenue"] - monthly_df["cogs"]
-                               - monthly_df["operating_expenses"]
-                               - monthly_df["finance_costs"])
-monthly_df["net_cashflow"] = monthly_df["cash_inflow"] - monthly_df["cash_outflow"]
-monthly_df.to_csv("data/monthly_financials.csv", index=False)
+quarterly_df["gross_profit"] = quarterly_df["revenue"] - quarterly_df["cogs"]
+quarterly_df["net_profit"]   = (quarterly_df["revenue"] - quarterly_df["cogs"]
+                                - quarterly_df["operating_expenses"]
+                                - quarterly_df["finance_costs"])
+quarterly_df["net_cashflow"] = quarterly_df["cash_inflow"] - quarterly_df["cash_outflow"]
+quarterly_df.to_csv("data/quarterly_financials.csv", index=False)
 
 # ── Verify annual totals ───────────────────────────────────────────────────────
-monthly_df["year"] = monthly_df["date"].dt.year
-ann = monthly_df.groupby("year")[["revenue","net_profit","operating_expenses","gross_profit"]].sum()
-for yr in [2023, 2024]:
+quarterly_df["year"] = quarterly_df["date"].dt.year
+ann = quarterly_df.groupby("year")[["revenue","net_profit","gross_profit"]].sum()
+for yr in [2023, 2024, 2025]:
     r  = ann.loc[yr]
     gm = r["gross_profit"] / r["revenue"] * 100
-    np_margin = r["net_profit"] / r["revenue"] * 100
+    npm = r["net_profit"] / r["revenue"] * 100
     print(f"FY{yr}: Rev=R{r['revenue']/1000:.2f}B  NP=R{r['net_profit']/1000:.2f}B"
-          f"  NPM={np_margin:.2f}%  GPM={gm:.2f}%")
-monthly_df.drop(columns=["year"], inplace=True)
+          f"  NPM={npm:.2f}%  GPM={gm:.2f}%")
+quarterly_df.drop(columns=["year"], inplace=True)
 
 # ── Balance Sheet (Quarterly) ─────────────────────────────────────────────────
-# Calibrated to hit CR≈1.05, QR≈0.40, IT≈8.8x at Q8 (2024-Q4).
-# Target Inventory Q8: COGS_annual(94,136M) / 8.8 = 10,697M
-# With CR-QR spread = 0.65 → CL_Q8 = 10,697/0.65 = 16,457M
-# START_CL = 16,457 / (1.025^7) = 13,840M
-
-quarters  = pd.date_range(start="2023-01-01", periods=8, freq="QS")
 START_CL  = 13_300
 START_CR, END_CR = 1.30, 1.05
 START_QR, END_QR = 0.55, 0.40
@@ -98,7 +87,7 @@ TOTAL_ASSETS_BASE = 34_000
 bs_data = []
 
 for i, q in enumerate(quarters):
-    t_ratio = i / 7                          # 0 → 1 over 8 quarters
+    t_ratio = i / 11
 
     cr = START_CR - t_ratio*(START_CR - END_CR) + np.random.uniform(-0.02, 0.02)
     qr = START_QR - t_ratio*(START_QR - END_QR) + np.random.uniform(-0.01, 0.01)
@@ -109,17 +98,16 @@ for i, q in enumerate(quarters):
     quick_assets = ca - inv
 
     total_assets = TOTAL_ASSETS_BASE * (1 + 0.015 * i) * np.random.uniform(0.98, 1.02)
-
-    # Equity grows in 2023, erodes in 2024 after R3.19B loss
-    te = 12_000 + 300 * i if i < 4 else 13_200 - 950 * (i - 3)
+    # Equity: grows FY2023, erodes FY2024 (big loss), partial recovery FY2025
+    if   i < 4:  te = 12_000 + 300 * i
+    elif i < 8:  te = 13_200 - 950 * (i - 3)
+    else:        te = 9_300  + 400 * (i - 7)
     total_debt = total_assets - te
 
-    q_mask = ((monthly_df["date"].dt.year    == q.year) &
-              (monthly_df["date"].dt.quarter == ((i % 4) + 1)))
-    q_rows = monthly_df[q_mask]
-    q_np   = q_rows["net_profit"].sum() if len(q_rows) else 0
-    q_cogs = q_rows["cogs"].sum()       if len(q_rows) else 0
-    q_rev  = q_rows["revenue"].sum()    if len(q_rows) else 0
+    q_row  = quarterly_df.iloc[i]
+    q_cogs = q_row["cogs"]
+    q_rev  = q_row["revenue"]
+    q_np   = q_row["net_profit"]
 
     inv_turnover   = round((q_cogs * 4) / inv,          2) if inv          > 0 else 0
     asset_turnover = round((q_rev  * 4) / total_assets, 2) if total_assets > 0 else 0
@@ -144,26 +132,26 @@ bs_df.to_csv("data/balance_sheet.csv", index=False)
 last = bs_df.iloc[-1]
 cr_f = last["current_assets"] / last["current_liabilities"]
 qr_f = last["quick_assets"]   / last["current_liabilities"]
-it_f = last["inventory_turnover"]
-print(f"Q8 ratios: CR={cr_f:.3f} (target 1.05)  QR={qr_f:.3f} (target 0.40)  IT={it_f:.2f}x (target 8.8x)")
+print(f"Q12 ratios: CR={cr_f:.3f}  QR={qr_f:.3f}")
 
 # ── Budget vs Actual + YoY — exact document figures (ZAR millions) ────────────
+# FY2025 audited results (53 weeks ended 02 March 2025, JSE SENS 26 May 2025)
 categories  = ["Sales Revenue", "Gross Profit", "Operating Expenses",
                 "Finance Costs", "Net Profit / Loss"]
-actual_2024 = [ 114_940,         20_800,          22_600,        1_390,  -3_190]
-budget_2024 = [ 112_000,         22_960,          20_500,          700,   2_500]
-actual_2023 = [ 108_570,         20_628,          20_200,          700,   1_170]
+actual_2025 = [ 118_610,         21_764,          22_954,        1_100,    -736]
+budget_2025 = [ 116_000,         21_400,          21_500,        1_000,     900]
+actual_2024 = [ 112_295,         20_280,          22_518,        1_390,  -3_301]
 cat_type    = ["Revenue",       "Profit",        "Expense",    "Expense","Profit"]
 
 var_df = pd.DataFrame({
     "category":    categories,
+    "actual_2025": actual_2025,
+    "budget_2025": budget_2025,
     "actual_2024": actual_2024,
-    "budget_2024": budget_2024,
-    "actual_2023": actual_2023,
-    "variance":    [round(a-b, 2) for a, b in zip(actual_2024, budget_2024)],
-    "variance_pct":[round((a-b)/abs(b)*100, 2) for a, b in zip(actual_2024, budget_2024)],
-    "yoy_change":  [round(a4-a3, 2) for a4, a3 in zip(actual_2024, actual_2023)],
-    "yoy_pct":     [round((a4-a3)/abs(a3)*100, 2) for a4, a3 in zip(actual_2024, actual_2023)],
+    "variance":    [round(a-b, 2) for a, b in zip(actual_2025, budget_2025)],
+    "variance_pct":[round((a-b)/abs(b)*100, 2) for a, b in zip(actual_2025, budget_2025)],
+    "yoy_change":  [round(a5-a4, 2) for a5, a4 in zip(actual_2025, actual_2024)],
+    "yoy_pct":     [round((a5-a4)/abs(a4)*100, 2) for a5, a4 in zip(actual_2025, actual_2024)],
     "type":        cat_type,
 })
 var_df["status"] = var_df.apply(
@@ -178,13 +166,13 @@ var_df.to_csv("data/variance.csv", index=False)
 # ── Annual Revenue Trend 2021–2025 (exact document figures) ───────────────────
 trend_df = pd.DataFrame({
     "year":       [2021,   2022,   2023,    2024,    2025],
-    "revenue":    [94_660, 99_630, 108_570, 114_940, 121_560],
-    "net_profit": [None,   None,   1_170,  -3_190,   None],
+    "revenue":    [94_660, 99_630, 108_570, 112_295, 118_610],
+    "net_profit": [None,   None,   1_170,   -3_301,    -736],
 })
 trend_df.to_csv("data/revenue_trend.csv", index=False)
 
 print(f"\nFiles written:")
-print(f"  monthly_financials.csv — {len(monthly_df)} rows")
-print(f"  balance_sheet.csv      — {len(bs_df)} rows")
-print(f"  variance.csv           — {len(var_df)} rows")
-print(f"  revenue_trend.csv      — {len(trend_df)} rows")
+print(f"  quarterly_financials.csv — {len(quarterly_df)} rows")
+print(f"  balance_sheet.csv        — {len(bs_df)} rows")
+print(f"  variance.csv             — {len(var_df)} rows")
+print(f"  revenue_trend.csv        — {len(trend_df)} rows")

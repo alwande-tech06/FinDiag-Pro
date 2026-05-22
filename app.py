@@ -114,7 +114,7 @@ def register_user(name: str, email: str, pw: str, role: str = "Viewer") -> tuple
 # SESSION STATE
 # ══════════════════════════════════════════════════════════════════════════════
 _defaults = {"authenticated": False, "user": None, "page": "landing",
-             "logged_access": False, "auth_tab": "login"}
+             "logged_access": False, "auth_tab": "login", "uploaded_monthly": None}
 for _k, _v in _defaults.items():
     if _k not in st.session_state:
         st.session_state[_k] = _v
@@ -473,12 +473,19 @@ _user = st.session_state.user
 role  = _user["role"]
 
 # ── Data loaders ──────────────────────────────────────────────────────────────
+def _read_csv_clean(path, **kwargs):
+    """Read CSV robustly — handles Windows (\\r\\n) and Mac (\\r) line endings."""
+    with open(path, "rb") as f:
+        raw = f.read().decode("utf-8-sig", errors="replace")
+    raw = raw.replace("\r\n", "\n").replace("\r", "\n")
+    return pd.read_csv(io.StringIO(raw), **kwargs)
+
 @st.cache_data
 def load_data():
-    monthly  = pd.read_csv("data/monthly_financials.csv", parse_dates=["date"])
-    balance  = pd.read_csv("data/balance_sheet.csv")
-    variance = pd.read_csv("data/variance.csv")
-    trend    = pd.read_csv("data/revenue_trend.csv")
+    monthly  = _read_csv_clean("data/quarterly_financials.csv", parse_dates=["date"])
+    balance  = _read_csv_clean("data/balance_sheet.csv")
+    variance = _read_csv_clean("data/variance.csv")
+    trend    = _read_csv_clean("data/revenue_trend.csv")
     return monthly, balance, variance, trend
 
 monthly_df, balance_df, variance_df, trend_df = load_data()
@@ -497,7 +504,7 @@ def calc_ratios(bs: pd.DataFrame) -> pd.DataFrame:
 
 def compute_health_score(monthly: pd.DataFrame, ratios: pd.DataFrame) -> dict:
     latest = ratios.iloc[-1]
-    recent = monthly.tail(3)
+    recent = monthly.tail(4)
     cr = latest["current_ratio"];  qr = latest["quick_ratio"]
     liq_score  = min(100, max(0, (cr / 2.0) * 50 + (qr / 1.5) * 50))
     gpm = (recent["gross_profit"] / recent["revenue"]).mean() * 100
@@ -535,7 +542,7 @@ def detect_anomalies(monthly: pd.DataFrame) -> pd.DataFrame:
 def build_excel(monthly, balance, variance, anomaly) -> bytes:
     buf = io.BytesIO()
     with pd.ExcelWriter(buf, engine="openpyxl") as xw:
-        monthly.to_excel(xw, sheet_name="Monthly Financials", index=False)
+        monthly.to_excel(xw, sheet_name="Quarterly Financials", index=False)
         balance.to_excel(xw, sheet_name="Balance Sheet", index=False)
         variance.to_excel(xw, sheet_name="Variance Analysis", index=False)
         anomaly[anomaly["anomaly"]].to_excel(xw, sheet_name="Anomalies", index=False)
@@ -607,15 +614,6 @@ def build_pdf(health, latest_r, org, fy) -> bytes:
     pdf.cell(0, 6, "Durban University of Technology | Managerial Finance PBL | Pathway B", ln=True, align="C")
     return bytes(pdf.output())
 
-# ── Computed data ─────────────────────────────────────────────────────────────
-ratios_df   = calc_ratios(balance_df)
-health      = compute_health_score(monthly_df, ratios_df)
-anomaly_df  = detect_anomalies(monthly_df)
-latest_r    = ratios_df.iloc[-1]
-n_anomalies = anomaly_df["anomaly"].sum()
-variance_df["color"] = variance_df.apply(
-    lambda r: "#16a34a" if r["status"] == "Favourable" else "#dc2626", axis=1)
-
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown(f"""
@@ -635,21 +633,55 @@ with st.sidebar:
         uploaded = st.file_uploader("Upload Financial CSV", type=["csv", "xlsx"])
         if uploaded:
             try:
-                monthly_df = (pd.read_excel(uploaded, parse_dates=["date"])
-                              if uploaded.name.endswith(".xlsx")
-                              else pd.read_csv(uploaded, parse_dates=["date"]))
-                log_action(_user["email"], f"Uploaded: {uploaded.name}")
-                st.success("Custom data loaded!")
+                import csv as _csv
+                import re as _re
+                _raw = uploaded.getvalue()
+                _sep = ","
+                import re as _re
+                if uploaded.name.endswith(".xlsx"):
+                    _up_df = pd.read_excel(io.BytesIO(_raw))
+                else:
+                    # Decode and strip Windows carriage returns (\r) before parsing
+                    _text = _raw.decode("utf-8-sig", errors="replace").replace("\r\n", "\n").replace("\r", "\n")
+                    try:
+                        _dialect = _csv.Sniffer().sniff(_text[:4096], delimiters=",;\t|")
+                        _sep = _dialect.delimiter
+                    except Exception:
+                        _sep = ","
+                    _up_df = pd.read_csv(io.StringIO(_text), sep=_sep)
+                # Normalise column names: strip whitespace, lowercase, keep alphanumeric + underscore
+                _up_df.columns = [
+                    _re.sub(r'[^a-z0-9_]', '', c.lower().strip().replace(" ", "_"))
+                    for c in _up_df.columns.astype(str)
+                ]
+                if "date" in _up_df.columns:
+                    _up_df["date"] = pd.to_datetime(_up_df["date"])
+                _required = {"revenue", "gross_profit", "net_profit",
+                             "net_cashflow", "operating_expenses"}
+                _missing = _required - set(_up_df.columns)
+                if _missing:
+                    st.error(
+                        f"File is missing required columns: "
+                        f"{', '.join(sorted(_missing))}\n\n"
+                        f"Required: date, revenue, gross_profit, net_profit, "
+                        f"net_cashflow, operating_expenses\n\n"
+                        f"Delimiter detected: '{_sep}' | "
+                        f"Columns found: {len(_up_df.columns)}\n\n"
+                        f"Column names: {', '.join(_up_df.columns.tolist())}"
+                    )
+                else:
+                    st.session_state.uploaded_monthly = _up_df
+                    log_action(_user["email"], f"Uploaded: {uploaded.name}")
+                    st.success("Custom data loaded!")
             except Exception as e:
                 st.error(f"Error: {e}")
+        if st.session_state.uploaded_monthly is not None:
+            if st.button("Clear uploaded data", use_container_width=True):
+                st.session_state.uploaded_monthly = None
+                st.rerun()
         st.markdown("---")
 
-    period = st.selectbox("Analysis Period", ["All periods","Last 12 months","Last 6 months"])
-    if period == "Last 12 months":
-        monthly_df = monthly_df.tail(12).reset_index(drop=True)
-    elif period == "Last 6 months":
-        monthly_df = monthly_df.tail(6).reset_index(drop=True)
-
+    period = st.selectbox("Analysis Period", ["All periods","Last 8 quarters","Last 4 quarters"])
     zscore_threshold = (st.slider("Z-Score Threshold", 1.5, 3.5, 2.0, 0.1)
                         if role in ["Admin", "Analyst"] else 2.0)
 
@@ -660,7 +692,30 @@ with st.sidebar:
     fiscal_year = st.selectbox("Fiscal Year", ["FY 2024","FY 2023","FY 2022"],
                                 disabled=(role == "Viewer"))
 
-    if role in ["Admin", "Analyst"]:
+    st.markdown("---")
+    st.caption("Pick n Pay Financial Health System\nDurban University of Technology")
+
+# ── Active dataset (uploaded data takes priority over default) ────────────────
+_base_monthly = st.session_state.uploaded_monthly if st.session_state.uploaded_monthly is not None else monthly_df
+if period == "Last 8 quarters":
+    monthly_df = _base_monthly.tail(8).reset_index(drop=True)
+elif period == "Last 4 quarters":
+    monthly_df = _base_monthly.tail(4).reset_index(drop=True)
+else:
+    monthly_df = _base_monthly.copy()
+
+# ── Computed data ─────────────────────────────────────────────────────────────
+ratios_df   = calc_ratios(balance_df)
+health      = compute_health_score(monthly_df, ratios_df)
+anomaly_df  = detect_anomalies(monthly_df)
+latest_r    = ratios_df.iloc[-1]
+n_anomalies = anomaly_df["anomaly"].sum()
+variance_df["color"] = variance_df.apply(
+    lambda r: "#16a34a" if r["status"] == "Favourable" else "#dc2626", axis=1)
+
+# ── Export buttons (depend on computed data, placed after sidebar) ─────────────
+if role in ["Admin", "Analyst"]:
+    with st.sidebar:
         st.markdown("---")
         st.markdown("**Export**")
         excel_bytes = build_excel(monthly_df, balance_df, variance_df, anomaly_df)
@@ -673,16 +728,20 @@ with st.sidebar:
                            file_name=f"FinDiag_{datetime.now():%Y%m%d}.pdf",
                            mime="application/pdf",
                            use_container_width=True)
-
-    st.markdown("---")
-    if st.button("Sign Out", use_container_width=True):
-        log_action(_user["email"], "Logout")
-        st.session_state.update({"authenticated":False,"user":None,
-                                  "page":"login","logged_access":False})
-        st.rerun()
-
-    st.markdown("---")
-    st.caption("Pick n Pay Financial Health System\nDurban University of Technology")
+        st.markdown("---")
+        if st.button("Sign Out", use_container_width=True):
+            log_action(_user["email"], "Logout")
+            st.session_state.update({"authenticated":False,"user":None,
+                                      "page":"login","logged_access":False})
+            st.rerun()
+else:
+    with st.sidebar:
+        st.markdown("---")
+        if st.button("Sign Out", use_container_width=True):
+            log_action(_user["email"], "Logout")
+            st.session_state.update({"authenticated":False,"user":None,
+                                      "page":"login","logged_access":False})
+            st.rerun()
 
 # ── Log access once per session ───────────────────────────────────────────────
 if not st.session_state.logged_access:
@@ -952,7 +1011,7 @@ def render_ratio_analysis():
               delta="Declining" if wc_val < 3_000 else "Stable",
               delta_color="inverse" if wc_val < 3_000 else "normal")
     c8.metric("Gross Profit Margin",
-              f"{(monthly_df['gross_profit'].tail(3).sum()/monthly_df['revenue'].tail(3).sum()*100):.1f}%",
+              f"{(monthly_df['gross_profit'].tail(4).sum()/monthly_df['revenue'].tail(4).sum()*100):.1f}%",
               "18.1% FY2024 actual")
 
     st.markdown("---")
@@ -999,7 +1058,7 @@ def render_ratio_analysis():
                                     name="Net Profit Margin %",
                                     line=dict(color=C_BLUE, width=2.5),
                                     fill="tozeroy", fillcolor="rgba(29,78,216,0.07)"))
-    fig_margin.update_layout(title="Profit Margin Trends — Monthly", height=280,
+    fig_margin.update_layout(title="Profit Margin Trends — Quarterly", height=280,
                              margin=dict(t=50,b=20), yaxis_title="Margin %",
                              legend=dict(orientation="h", y=-0.3))
     st.plotly_chart(fig_margin, use_container_width=True)
@@ -1068,38 +1127,38 @@ def render_variance_monitor():
     c4.metric("Net Profit vs Budget",   f"R{pnl_row['variance']/1000:+.1f}B", f"{pnl_row['variance_pct']:+.1f}%")
 
     st.markdown("---")
-    st.markdown("##### Budget vs Actual — FY2024 (ZAR millions)")
+    st.markdown("##### Budget vs Actual — FY2025 (ZAR millions)")
     display_var = variance_df.copy()
-    for col in ["actual_2024","budget_2024","actual_2023"]:
+    for col in ["actual_2025","budget_2025","actual_2024"]:
         display_var[col] = display_var[col].apply(lambda x: f"R{x/1000:+.2f}B")
     display_var["variance"]     = display_var["variance"].apply(lambda x: f"R{x/1000:+.2f}B")
     display_var["variance_pct"] = display_var["variance_pct"].apply(lambda x: f"{x:+.1f}%")
     display_var["yoy_change"]   = display_var["yoy_change"].apply(lambda x: f"R{x/1000:+.2f}B")
     display_var["yoy_pct"]      = display_var["yoy_pct"].apply(lambda x: f"{x:+.1f}%")
     display_var = display_var.rename(columns={
-        "category":"Category","budget_2024":"Budget 2024","actual_2024":"Actual 2024",
-        "actual_2023":"Actual 2023","variance":"Budget Variance",
+        "category":"Category","budget_2025":"Budget 2025","actual_2025":"Actual 2025",
+        "actual_2024":"Actual 2024","variance":"Budget Variance",
         "variance_pct":"Variance %","yoy_change":"YoY Change","yoy_pct":"YoY %",
         "type":"Type","status":"Status",
     })
-    st.dataframe(display_var[["Category","Type","Budget 2024","Actual 2024","Budget Variance",
-                               "Variance %","Actual 2023","YoY Change","YoY %","Status"]],
+    st.dataframe(display_var[["Category","Type","Budget 2025","Actual 2025","Budget Variance",
+                               "Variance %","Actual 2024","YoY Change","YoY %","Status"]],
                  use_container_width=True, hide_index=True)
 
     st.markdown("---")
     c1, c2 = st.columns(2)
     with c1:
         fig_var = go.Figure()
-        fig_var.add_trace(go.Bar(name="Budget 2024", x=variance_df["category"],
-                                 y=variance_df["budget_2024"] / 1000,
+        fig_var.add_trace(go.Bar(name="Budget 2025", x=variance_df["category"],
+                                 y=variance_df["budget_2025"] / 1000,
                                  marker_color="rgba(29,78,216,0.55)",
                                  marker_line=dict(color=C_BLUE, width=1)))
-        fig_var.add_trace(go.Bar(name="Actual 2024", x=variance_df["category"],
-                                 y=variance_df["actual_2024"] / 1000,
+        fig_var.add_trace(go.Bar(name="Actual 2025", x=variance_df["category"],
+                                 y=variance_df["actual_2025"] / 1000,
                                  marker_color="rgba(220,38,38,0.55)",
                                  marker_line=dict(color=C_RED, width=1)))
-        fig_var.add_trace(go.Bar(name="Actual 2023", x=variance_df["category"],
-                                 y=variance_df["actual_2023"] / 1000,
+        fig_var.add_trace(go.Bar(name="Actual 2024", x=variance_df["category"],
+                                 y=variance_df["actual_2024"] / 1000,
                                  marker_color="rgba(13,148,136,0.45)",
                                  marker_line=dict(color=C_TEAL, width=1)))
         fig_var.update_layout(barmode="group", title="Budget vs Actual vs Prior Year (R billions)",
@@ -1137,7 +1196,7 @@ def render_variance_monitor():
                                  y=monthly_df["operating_expenses"] / 1000,
                                  name="Operating Expenses",
                                  line=dict(color="#dc2626", width=2, dash="dash")))
-    fig_rev.update_layout(title="Monthly Revenue vs Operating Expenses (R millions)",
+    fig_rev.update_layout(title="Quarterly Revenue vs Operating Expenses (R millions)",
                           height=280, margin=dict(t=50,b=20), yaxis_title="R millions",
                           legend=dict(orientation="h", y=-0.3))
     st.plotly_chart(fig_rev, use_container_width=True)
@@ -1271,8 +1330,8 @@ def render_early_warning():
 
     risks = {
         "Liquidity Risk":     risk_level([liq < 1.2, liq < 1.5]),
-        "Cash Flow Risk":     risk_level([anomaly_df["net_cashflow"].tail(3).mean() < 0,
-                                          anomaly_df["net_cashflow"].tail(3).mean() < 50000]),
+        "Cash Flow Risk":     risk_level([anomaly_df["net_cashflow"].tail(4).mean() < 0,
+                                          anomaly_df["net_cashflow"].tail(4).mean() < 50000]),
         "Solvency Risk":      risk_level([de > 2.5, de > 1.8]),
         "Profitability Risk": risk_level([health["npm"] < 5, health["npm"] < 12]),
         "Anomaly / Fraud":    risk_level([n_anomalies > 5, n_anomalies > 2]),
@@ -1342,8 +1401,8 @@ def render_early_warning():
             min(100, max(0, 100 - health["npm"] * 3)),
             min(100, max(0, (de / 3) * 100)),
             min(100, max(0, 100 - health["gpm"] * 1.5)),
-            min(100, max(0, (1 - anomaly_df["net_cashflow"].tail(3).mean() /
-                             anomaly_df["revenue"].tail(3).mean()) * 100)),
+            min(100, max(0, (1 - anomaly_df["net_cashflow"].tail(4).mean() /
+                             anomaly_df["revenue"].tail(4).mean()) * 100)),
             min(100, max(0, abs(variance_df["variance_pct"]).mean() * 3)),
         ]
         dim_labels = ["Liquidity","Profitability","Leverage","Margin","Cash Flow","Variance"]
@@ -1361,10 +1420,10 @@ def render_early_warning():
         st.plotly_chart(fig_rr, use_container_width=True)
 
     st.markdown("---")
-    last_inflow  = monthly_df["cash_inflow"].tail(3).mean()
-    last_outflow = monthly_df["cash_outflow"].tail(3).mean()
+    last_inflow  = monthly_df["cash_inflow"].tail(4).mean()
+    last_outflow = monthly_df["cash_outflow"].tail(4).mean()
     forecast_months = pd.date_range(
-        start=monthly_df["date"].max() + pd.DateOffset(months=1), periods=6, freq="MS")
+        start=monthly_df["date"].max() + pd.DateOffset(months=3), periods=6, freq="QS")
     inflow_f  = [last_inflow  * (1+0.015*i) * np.random.uniform(0.97,1.03) for i in range(1,7)]
     outflow_f = [last_outflow * (1+0.018*i) * np.random.uniform(0.97,1.03) for i in range(1,7)]
     net_f     = [i-o for i,o in zip(inflow_f, outflow_f)]
