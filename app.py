@@ -696,14 +696,70 @@ with st.sidebar:
     st.markdown("---")
     st.caption("Pick n Pay Financial Health System\nDurban University of Technology")
 
-# ── Active dataset (uploaded data takes priority over default) ────────────────
-_base_monthly = st.session_state.uploaded_monthly if st.session_state.uploaded_monthly is not None else monthly_df
-# Step 1 — apply fiscal year filter
-if fiscal_year != "All years":
-    _yr = int(fiscal_year.split()[1])
-    _base_monthly = _base_monthly[_base_monthly["date"].dt.year == _yr].reset_index(drop=True)
-    balance_df    = balance_df[balance_df["quarter"].str.startswith(str(_yr))].reset_index(drop=True)
+# ── Load datasets ─────────────────────────────────────────────
+monthly_df, balance_df, variance_df, trend_df = load_data()
 
+# ── Uploaded data takes priority ──────────────────────────────
+if st.session_state.uploaded_monthly is not None:
+    monthly_df = st.session_state.uploaded_monthly.copy()
+
+# ── Fiscal Year Filter ────────────────────────────────────────
+selected_year = fiscal_year.replace("FY ", "").strip()
+
+# Filter monthly financials
+if "date" in monthly_df.columns:
+    monthly_df["date"] = pd.to_datetime(monthly_df["date"])
+    monthly_df = monthly_df[
+        monthly_df["date"].dt.year.astype(str) == selected_year
+    ]
+
+# Filter balance sheet
+if "year" in balance_df.columns:
+    balance_df = balance_df[
+        balance_df["year"].astype(str) == selected_year
+    ]
+
+# Filter variance analysis
+if "year" in variance_df.columns:
+    variance_df = variance_df[
+        variance_df["year"].astype(str) == selected_year
+    ]
+
+# Filter trend data
+if "year" in trend_df.columns:
+    trend_df = trend_df[
+        trend_df["year"].astype(str) == selected_year
+    ]
+
+# ── Period filtering ──────────────────────────────────────────
+if period == "Last 8 quarters":
+    monthly_df = monthly_df.tail(8).reset_index(drop=True)
+
+elif period == "Last 4 quarters":
+    monthly_df = monthly_df.tail(4).reset_index(drop=True)
+
+# ── Recalculate ratios dynamically ────────────────────────────
+ratios_df = calc_ratios(balance_df)
+
+# ── Recalculate health score dynamically ──────────────────────
+health = compute_health_score(monthly_df, ratios_df)
+
+# ── Recalculate anomaly detection dynamically ─────────────────
+anomaly_df = detect_anomalies(monthly_df)
+
+# ── Latest ratio values ───────────────────────────────────────
+latest_r = ratios_df.iloc[-1]
+
+# ── Total anomalies ───────────────────────────────────────────
+n_anomalies = anomaly_df["anomaly"].sum()
+
+# ── Variance colors ───────────────────────────────────────────
+variance_df["color"] = variance_df.apply(
+    lambda r: "#16a34a"
+    if r["status"] == "Favourable"
+    else "#dc2626",
+    axis=1
+)
 # Step 2 — apply rolling period filter on top
 if period == "Last 8 quarters":
     monthly_df = _base_monthly.tail(8).reset_index(drop=True)
@@ -714,14 +770,6 @@ elif period == "Last 4 quarters":
 else:
     monthly_df = _base_monthly.copy()
 
-# ── Computed data ─────────────────────────────────────────────────────────────
-ratios_df   = calc_ratios(balance_df)
-health      = compute_health_score(monthly_df, ratios_df)
-anomaly_df  = detect_anomalies(monthly_df, zscore_threshold)
-latest_r    = ratios_df.iloc[-1]
-n_anomalies = anomaly_df["anomaly"].sum()
-variance_df["color"] = variance_df.apply(
-    lambda r: "#16a34a" if r["status"] == "Favourable" else "#dc2626", axis=1)
 
 # ── Export buttons (depend on computed data, placed after sidebar) ─────────────
 if role in ["Admin", "Analyst"]:
