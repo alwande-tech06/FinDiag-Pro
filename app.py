@@ -1473,12 +1473,12 @@ def render_early_warning():
         st.plotly_chart(fig_rr, use_container_width=True)
 
     st.markdown("---")
-    last_inflow  = monthly_df["cash_inflow"].tail(4).mean()
-    last_outflow = monthly_df["cash_outflow"].tail(4).mean()
-    forecast_months = pd.date_range(
-        start=monthly_df["date"].max() + pd.DateOffset(months=3), periods=6, freq="QS")
-    inflow_f  = [last_inflow  * (1+0.015*i) * np.random.uniform(0.97,1.03) for i in range(1,7)]
-    outflow_f = [last_outflow * (1+0.018*i) * np.random.uniform(0.97,1.03) for i in range(1,7)]
+    _last_q_avg_in  = monthly_df["cash_inflow"].tail(4).mean() / 3
+    _last_q_avg_out = monthly_df["cash_outflow"].tail(4).mean() / 3
+    _fcst_start = monthly_df["date"].max() + pd.DateOffset(months=1)
+    forecast_months = pd.date_range(start=_fcst_start, periods=6, freq="MS")
+    inflow_f  = [_last_q_avg_in  * (1+0.005*i) * np.random.uniform(0.97,1.03) for i in range(1,7)]
+    outflow_f = [_last_q_avg_out * (1+0.006*i) * np.random.uniform(0.97,1.03) for i in range(1,7)]
     net_f     = [i-o for i,o in zip(inflow_f, outflow_f)]
 
     fig_fcst = go.Figure()
@@ -1493,9 +1493,11 @@ def render_early_warning():
                               name="Net Cash Flow",
                               marker_color=["#16a34a" if v > 0 else "#dc2626" for v in net_f],
                               opacity=0.5))
-    fig_fcst.update_layout(title="6-Month Cash Flow Forecast", height=300,
-                           margin=dict(t=50,b=20), yaxis_title="R thousands",
-                           legend=dict(orientation="h", y=-0.3))
+    _fcst_label = f"{forecast_months[0]:%b %Y} – {forecast_months[-1]:%b %Y}"
+    fig_fcst.update_layout(
+        title=f"6-Month Cash Flow Forecast ({_fcst_label})",
+        height=300, margin=dict(t=50,b=20), yaxis_title="R thousands",
+        legend=dict(orientation="h", y=-0.3))
     st.plotly_chart(fig_fcst, use_container_width=True)
 
     st.markdown("#### Strategic Recommendations for Management")
