@@ -528,12 +528,12 @@ def compute_health_score(monthly: pd.DataFrame, ratios: pd.DataFrame) -> dict:
             "category":category,"color":color,
             "gpm":round(gpm,1),"npm":round(npm,1),"roa":round(latest["roa"],1)}
 
-def detect_anomalies(monthly: pd.DataFrame) -> pd.DataFrame:
+def detect_anomalies(monthly: pd.DataFrame, threshold: float = 2.0) -> pd.DataFrame:
     features = monthly[["revenue","operating_expenses","net_cashflow","net_profit"]].copy()
     z_scores = np.abs(stats.zscore(features.to_numpy()))
     monthly  = monthly.copy()
     monthly["max_zscore"]  = z_scores.max(axis=1).round(2)
-    monthly["zscore_flag"] = monthly["max_zscore"] > 2.0
+    monthly["zscore_flag"] = monthly["max_zscore"] > threshold
     iso = IsolationForest(contamination=0.1, random_state=42)
     monthly["iso_flag"] = iso.fit_predict(features) == -1
     monthly["anomaly"]  = monthly["zscore_flag"] | monthly["iso_flag"]
@@ -682,32 +682,42 @@ with st.sidebar:
         st.markdown("---")
 
     period = st.selectbox("Analysis Period", ["All periods","Last 8 quarters","Last 4 quarters"])
+    fiscal_year = st.selectbox("Fiscal Year", ["All years","FY 2025","FY 2024","FY 2023"])
     zscore_threshold = (st.slider("Z-Score Threshold", 1.5, 3.5, 2.0, 0.1)
                         if role in ["Admin", "Analyst"] else 2.0)
 
     st.markdown("---")
     st.markdown("**Organisation**")
-    org_name    = st.text_input("Name", value="Pick n Pay Stores Ltd",
-                                 disabled=(role == "Viewer"))
-    fiscal_year = st.selectbox("Fiscal Year", ["FY 2024","FY 2023","FY 2022"],
-                                disabled=(role == "Viewer"))
+    org_name = st.text_input("Name", value="Pick n Pay Stores Ltd",
+                              disabled=(role == "Viewer"))
+    report_fy = st.selectbox("Report Label (PDF)", ["FY 2025","FY 2024","FY 2023"],
+                              disabled=(role == "Viewer"))
 
     st.markdown("---")
     st.caption("Pick n Pay Financial Health System\nDurban University of Technology")
 
 # ── Active dataset (uploaded data takes priority over default) ────────────────
 _base_monthly = st.session_state.uploaded_monthly if st.session_state.uploaded_monthly is not None else monthly_df
+# Step 1 — apply fiscal year filter
+if fiscal_year != "All years":
+    _yr = int(fiscal_year.split()[1])
+    _base_monthly = _base_monthly[_base_monthly["date"].dt.year == _yr].reset_index(drop=True)
+    balance_df    = balance_df[balance_df["quarter"].str.startswith(str(_yr))].reset_index(drop=True)
+
+# Step 2 — apply rolling period filter on top
 if period == "Last 8 quarters":
     monthly_df = _base_monthly.tail(8).reset_index(drop=True)
+    balance_df = balance_df.tail(8).reset_index(drop=True)
 elif period == "Last 4 quarters":
     monthly_df = _base_monthly.tail(4).reset_index(drop=True)
+    balance_df = balance_df.tail(4).reset_index(drop=True)
 else:
     monthly_df = _base_monthly.copy()
 
 # ── Computed data ─────────────────────────────────────────────────────────────
 ratios_df   = calc_ratios(balance_df)
 health      = compute_health_score(monthly_df, ratios_df)
-anomaly_df  = detect_anomalies(monthly_df)
+anomaly_df  = detect_anomalies(monthly_df, zscore_threshold)
 latest_r    = ratios_df.iloc[-1]
 n_anomalies = anomaly_df["anomaly"].sum()
 variance_df["color"] = variance_df.apply(
@@ -723,7 +733,7 @@ if role in ["Admin", "Analyst"]:
                            file_name=f"FinDiag_{datetime.now():%Y%m%d}.xlsx",
                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                            use_container_width=True)
-        pdf_bytes = build_pdf(health, latest_r, org_name, fiscal_year)
+        pdf_bytes = build_pdf(health, latest_r, org_name, report_fy)
         st.download_button("Download PDF Report", data=pdf_bytes,
                            file_name=f"FinDiag_{datetime.now():%Y%m%d}.pdf",
                            mime="application/pdf",
@@ -857,7 +867,7 @@ st.markdown(f"""
     <div style="text-align:right;">
       <div style="color:#ffffff;font-weight:700;font-size:0.92rem;">{org_name}</div>
       <div style="color:rgba(255,255,255,0.65);font-size:0.72rem;margin:2px 0 6px;">
-        {fiscal_year} &nbsp;&bull;&nbsp; Decision Support Platform
+        {report_fy} &nbsp;&bull;&nbsp; Decision Support Platform
       </div>
       <span style="background:#e31837;color:#ffffff;font-size:0.62rem;font-weight:700;
                    padding:3px 10px;border-radius:999px;letter-spacing:0.1em;">
@@ -957,7 +967,7 @@ def render_health_scorecard():
             </div>""", unsafe_allow_html=True)
 
     st.markdown("---")
-    if len(monthly_df) >= 6:
+    if len(monthly_df) >= 2:
         rolling = monthly_df.copy()
         rolling["gpm"] = rolling["gross_profit"] / rolling["revenue"] * 100
         rolling["npm"] = rolling["net_profit"]   / rolling["revenue"] * 100

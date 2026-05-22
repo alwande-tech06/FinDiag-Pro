@@ -85,3 +85,16 @@ timestamp,user,action
 2026-05-22 12:27:58,admin@findiag.com,Uploaded: quarterly_financials (1).xlsx
 2026-05-22 12:28:07,admin@findiag.com,Uploaded: quarterly_financials (1).xlsx
 2026-05-22 12:28:07,admin@findiag.com,Uploaded: quarterly_financials (1).xlsx
+2026-05-22 18:37:51,analyst@findiag.com,Login — Role: Analyst
+2026-05-22 18:37:52,analyst@findiag.com,Dashboard viewed — Analyst
+2026-05-22 18:55:55,analyst@findiag.com,Uploaded: quarterly_financials (1).xlsx
+2026-05-22 18:56:14,analyst@findiag.com,Uploaded: quarterly_financials (1).xlsx
+2026-05-22 18:56:21,analyst@findiag.com,Uploaded: quarterly_financials (1).xlsx
+2026-05-22 18:56:27,analyst@findiag.com,Uploaded: quarterly_financials (1).xlsx
+2026-05-22 18:56:41,analyst@findiag.com,Uploaded: quarterly_financials (1).xlsx
+2026-05-22 18:56:53,analyst@findiag.com,Uploaded: quarterly_financials (1).xlsx
+2026-05-22 18:57:05,analyst@findiag.com,Uploaded: quarterly_financials (1).xlsx
+2026-05-22 18:57:05,analyst@findiag.com,Uploaded: quarterly_financials (1).xlsx
+2026-05-22 18:59:12,analyst@findiag.com,Logout
+2026-05-22 18:59:39,admin@findiag.com,Login — Role: Admin
+2026-05-22 18:59:40,admin@findiag.com,Dashboard viewed — Admin
